@@ -153,6 +153,73 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
 .zc .a{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .zbtns{display:flex;gap:8px}
 .zbtns button{padding:6px 12px}
+/* Pestañas y prototipo 3D */
+.tabs{display:flex;border-bottom:1px solid var(--rule)}
+.tabs button{background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;border-radius:0;margin-bottom:-1px;padding:8px 16px;font:600 16px var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.pane{display:flex;flex-direction:column;gap:10px;min-width:0}
+.v3bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.v3ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;font-size:13px;color:var(--muted)}
+.v3ctl label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.v3ctl button{padding:5px 12px}
+.v3d{height:min(68vh,620px);min-height:380px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--sheet);touch-action:none;position:relative}
+.v3d canvas{display:block}
+.v3d .hint{padding:14px;margin:0}
+.pane .hint{color:var(--muted);margin:0;font-size:12.5px}
+.ptwrap{overflow-x:auto}
+.ptab{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.ptab th{text-align:left;font:600 12.5px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 14px;border-bottom:1px solid var(--rule)}
+.ptab td{padding:7px 14px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.ptab td.num{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptab tr.gh td{background:var(--field);font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ptab .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;vertical-align:-1px;border:1px solid var(--rule)}
+.ptab button{padding:4px 12px;font-size:12px}
+.hw{padding:10px 14px 14px;font-size:13px}
+.hw ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+.tabs .only-m{display:none}
+
+/* Móvil y tablet: el formulario pasa a ser la pestaña «Medidas»; la barra de pestañas queda fija arriba */
+@media (max-width:1099px){
+  .tabs{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:env(safe-area-inset-top,0px)}
+  .tabs .only-m{display:block}
+  .app[data-tab="med"] .pane{display:none!important}
+  .app:not([data-tab="med"]) .form{display:none}
+}
+@media (max-width:700px){
+  body{padding-block:14px 32px}
+  h1{font-size:25px}
+  .sub{font-size:13px}
+  .hright{width:100%;justify-content:space-between;gap:12px}
+  .progress{min-width:0;flex:1}
+  .tabs button{flex:1;padding:12px 6px;font-size:15px}
+  .sheetbox svg{min-width:0}
+  .zgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .zc .v{font-size:16px}
+  .zbtns{width:100%} .zbtns button{flex:1;padding:9px 12px}
+  .row{grid-template-columns:36px minmax(0,1fr) 104px;padding:10px 12px}
+  .group h2{padding:10px 12px}
+  .meta{grid-template-columns:1fr}
+  .actions button{flex:1}
+  .v3bar{flex-direction:column;align-items:stretch}
+  .v3bar .unit{display:flex} .v3bar .unit button{flex:1;padding:10px}
+  .v3ctl{gap:6px 14px} .v3ctl label{padding:6px 0} .v3ctl button{margin-left:auto;padding:8px 14px}
+  .v3d{height:58vh;min-height:300px}
+  /* tabla de piezas como tarjetas: nombre y STL arriba, medidas debajo */
+  .ptab{min-width:0}
+  .ptab thead{display:none}
+  .ptab tr{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;padding:10px 12px;border-bottom:1px solid var(--rule)}
+  .ptab tr.gh{display:block;padding:0}
+  .ptab tr.gh td{display:block;padding:7px 12px}
+  .ptab td{padding:0;border:0}
+  .ptab td:nth-child(1){order:1;flex:1 0 calc(100% - 96px);min-width:0;font-weight:600}
+  .ptab td:nth-child(6){order:2;flex:0 0 auto}
+  .ptab td:nth-child(2),.ptab td:nth-child(3),.ptab td:nth-child(4){order:3}
+  .ptab td:nth-child(5){order:4;flex-basis:100%;color:var(--muted);font-size:12.5px}
+  .ptab td[data-l]::before{content:attr(data-l) " ";color:var(--muted);font-family:var(--f-body);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  .ptab button{padding:9px 16px;font-size:13px}
+  .hw{padding:10px 12px 14px}
+}
+@media (max-width:380px){ .tabs button{font-size:13.5px;letter-spacing:.03em;padding:12px 4px} }
 </style>
 
 <div class="wrap">
@@ -172,14 +239,36 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
     </div>
   </header>
 
-  <div class="app">
-    <section class="drawing" aria-label="Lámina técnica">
-      <div class="sheetbox" id="sheet"></div>
-      <div class="zinfo" id="zinfo" aria-live="polite"></div>
-      <div class="legend">
-        <span><i class="sw"></i>Cota medida</span>
-        <span><i class="sw ref"></i>≈ Cota de referencia (sin medir)</span>
-        <span>La rosca se dibuja separada: es el acople magnético, una pieza aparte</span>
+  <div class="app" id="app">
+    <section class="drawing" aria-label="Plano y prototipo 3D">
+      <div class="tabs" role="tablist" aria-label="Vista">
+        <button type="button" role="tab" class="only-m" data-tab="med" aria-selected="false">Medidas</button>
+        <button type="button" role="tab" data-tab="2d" aria-selected="true">Plano 2D</button>
+        <button type="button" role="tab" data-tab="3d" aria-selected="false">Prototipo 3D</button>
+      </div>
+      <div class="pane" id="pane-2d" role="tabpanel">
+        <div class="sheetbox" id="sheet"></div>
+        <div class="zinfo" id="zinfo" aria-live="polite"></div>
+        <div class="legend">
+          <span><i class="sw"></i>Cota medida</span>
+          <span><i class="sw ref"></i>≈ Cota de referencia (sin medir)</span>
+          <span>El soquete se dibuja separado: es la hembra del acople magnético y va en el brazo</span>
+        </div>
+      </div>
+      <div class="pane" id="pane-3d" role="tabpanel" hidden>
+        <div class="v3bar">
+          <div class="unit" role="group" aria-label="Vista del modelo"><button type="button" data-v3="ens" aria-pressed="true">Ensamblado</button><button type="button" data-v3="sep" aria-pressed="false">Separado</button></div>
+          <div class="v3ctl">
+            <label><input type="checkbox" id="v3amp" checked> Ampolleta</label>
+            <label><input type="checkbox" id="v3sop" checked> Soporte</label>
+            <label><input type="checkbox" id="v3ele" checked> Electrónica</label>
+            <label><input type="checkbox" id="v3cut"> Corte</label>
+            <button type="button" class="ghost" id="v3fit">Centrar</button>
+          </div>
+        </div>
+        <div class="v3d" id="v3d"><p class="hint" id="v3msg">Cargando modelo 3D…</p></div>
+        <p class="hint">Arrastra para girar · rueda o pellizco para zoom · clic derecho para desplazar. El corte abre la ampolleta y el soquete por la mitad.</p>
+        <div class="group" id="v3parts"></div>
       </div>
     </section>
 
@@ -187,45 +276,66 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 const GROUPS = [
-  {id:'bulbo', title:'Bulbo (difusor)', fields:[
-    {k:'Hb', n:'Altura del bulbo', ref:65, tip:'Desde la unión con el cuerpo hasta la punta del difusor.'},
+  {id:'bulbo', title:'Domo (difusor)', fields:[
+    {k:'Hb', n:'Altura del bulbo', ref:65, tip:'Desde el borde superior del anillo sensorial hasta la punta del difusor.'},
     {k:'D',  n:'Diámetro máximo del bulbo', ref:80, tip:'Mordazas exteriores en la zona más ancha. Gira la pieza y anota la lectura mayor.'},
-    {k:'Db', n:'Diámetro inferior del bulbo', ref:70, tip:'Borde inferior del difusor, donde se apoya sobre el cuerpo.'},
   ]},
-  {id:'cuerpo', title:'Cuerpo', fields:[
-    {k:'Hk', n:'Altura del cuerpo', ref:60, tip:'Desde la base del cuerpo (donde se une la rosca) hasta la unión con el bulbo.'},
-    {k:'Du', n:'Diámetro superior del cuerpo', ref:65, tip:'Mordazas exteriores justo bajo el bulbo.'},
-    {k:'Dk', n:'Diámetro inferior del cuerpo', ref:30, tip:'Mordazas exteriores en la base, donde se acopla la rosca.'},
+  {id:'anillo', title:'Anillo sensorial', note:'Banda ahumada entre el disipador y el domo, con la cámara al frente y 4 micrófonos (concepto Ampolleta-Cerebro).', fields:[
+    {k:'Hs', n:'Alto del anillo sensorial', ref:14, tip:'Tiene el mismo diámetro que el borde superior del cuerpo (Du). Pon 0 si no lo usas.'},
+    {k:'Oc', n:'Ø ventana de la cámara', ref:8, tip:'Agujero frontal para el lente. Cámara RPi v3: lente de unos 7,5 mm.'},
+  ]},
+  {id:'cuerpo', title:'Cuerpo (disipador)', fields:[
+    {k:'Hk', n:'Altura del cuerpo', ref:60, tip:'Desde el hombro sobre el acople magnético hasta el anillo sensorial.'},
+    {k:'Du', n:'Diámetro superior del cuerpo', ref:65, tip:'Mordazas exteriores justo bajo el bulbo. Es también el diámetro inferior del bulbo: ambos coinciden en la unión.'},
+    {k:'Dk', n:'Diámetro inferior del cuerpo', ref:46, tip:'En la base, justo sobre el acople magnético. Igual o mayor que el Ø del acople.'},
     {k:'e',  n:'Espesor de pared del cuerpo', ref:1.5, tip:'Mordazas exteriores sobre el borde de la pieza abierta.'},
     {k:'Om', n:'Ø agujero del micrófono', ref:3, tip:'Va en la pared del cuerpo, a la altura del micrófono. Si aún no lo perforas, anota el diámetro que planeas.'},
   ]},
-  {id:'casquillo', title:'Rosca · acople magnético', note:'Pieza aparte. El acople magnético va integrado en la rosca.', fields:[
-    {k:'Hc', n:'Altura de la rosca, con contacto', ref:26, tip:'Desde el contacto inferior hasta el borde que se une al cuerpo.'},
-    {k:'Dc', n:'Diámetro exterior de la rosca', ref:26.5, tip:'Sobre las crestas de la rosca, no en los valles. E27 nominal: 26,05–26,45 mm.'},
-    {k:'er', n:'Espesor de pared de la rosca', ref:1, tip:'Pared del casquillo donde va integrado el acople magnético.'},
-    {k:'P',  n:'Paso de rosca', ref:3.63, tip:'Mide la distancia entre 5 crestas y divide por 5. E27 nominal: 3,629 mm.'},
-    {k:'Hi', n:'Altura aislante + contacto', ref:5, tip:'Desde el contacto inferior hasta donde empieza la rosca.'},
-    {k:'Dt', n:'Diámetro del contacto inferior', ref:9, tip:'Mordazas exteriores sobre la placa de contacto.'},
+  {id:'acople', title:'Acople magnético', note:'Reemplaza la rosca E27. El macho va integrado al cuerpo; la hembra es el soquete SHU (pieza 001) en la punta del brazo. 6 contactos en PCD Ø20, 6 imanes N52 por lado con polaridad alternada y nervio KEY: calza en una sola posición.', fields:[
+    {k:'Hp', n:'Alto del acople macho', ref:12, tip:'Cuello bajo el cuerpo. Su cara lleva los 6 contactos y los 6 imanes.'},
+    {k:'Dp', n:'Diámetro del acople macho', ref:40, tip:'Entra en la copa del soquete con 0,3 mm de holgura por lado.'},
+    {k:'Pc', n:'Círculo de contactos (PCD)', ref:20, tip:'Planimetría SHU pieza 001: 6 pogo pins P75-E2 en PCD Ø20 mm. P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL.'},
+    {k:'Dm', n:'Diámetro de los imanes', ref:6, tip:'Imanes de neodimio N52 en disco, intercalados con los contactos.'},
+    {k:'Hm', n:'Alto de los imanes', ref:3, tip:'Van al ras de la cara. El piso del acople queda 1,2 mm más grueso que el imán.'},
+    {k:'Pm', n:'Círculo de imanes (PCD)', ref:30, tip:'Entre los contactos y el borde del acople.'},
+    {k:'Ds', n:'Diámetro exterior del soquete', ref:52, tip:'Planimetría SHU pieza 001: Ø52 mm.'},
+    {k:'Cd', n:'Profundidad de calce en el soquete', ref:8, tip:'Cuánto del acople macho entra en la copa. La copa lo guía de lado y los imanes lo sostienen.'},
   ]},
   {id:'montaje', title:'Montaje interior', fields:[
     {k:'z0',  n:'Altura de inicio del montaje (Z₀)', ref:0, tip:'Medida desde la base del cuerpo hasta donde se apoya el primer componente.'},
     {k:'gap', n:'Separación entre componentes', ref:2, tip:'Espacio libre que dejarás entre una pieza y la siguiente.'},
   ]},
+  {id:'soporte', title:'Soporte de mesa', note:'Medidas de diseño: no se miden, las eliges tú. Las de referencia salen de la foto del soporte.', fields:[
+    {k:'Bd', n:'Diámetro de la base', ref:150, tip:'Disco de apoyo. Por debajo es hueco para el cable y el lastre; se imprime boca abajo.'},
+    {k:'Bh', n:'Alto de la base', ref:14, tip:'Incluye el chaflán del borde superior.'},
+    {k:'Px', n:'Distancia del poste al eje de la ampolleta', ref:45, tip:'El poste va atrás a la derecha; la ampolleta queda sobre el centro de la base.'},
+    {k:'Ph', n:'Alto del poste sobre la base', ref:25, tip:'Hasta el eje de la primera articulación.'},
+    {k:'Ad', n:'Diámetro del poste y los brazos', ref:12, tip:'Los brazos son octogonales para imprimirlos acostados sin soportes.'},
+    {k:'A1', n:'Largo del brazo inferior', ref:170, tip:'Entre los ejes de sus dos articulaciones (poste → codo).'},
+    {k:'A2', n:'Largo del brazo superior', ref:130, tip:'Entre los ejes de sus dos articulaciones (codo → abrazadera).'},
+    {k:'Hl', n:'Altura de la punta del bulbo sobre la base', ref:40, tip:'La ampolleta cuelga con el bulbo hacia abajo: de la punta del difusor a la cara superior de la base. El codo se calcula solo para llegar a esta altura.'},
+    {k:'Bt', n:'Ø perno de las articulaciones', ref:5, tip:'M5 por defecto; los agujeros salen 0,3 mm más grandes.'},
+    {k:'Sw', n:'Ø agujero del interruptor', ref:6, tip:'Interruptor de palanca en la base, adelante a la izquierda.'},
+  ]},
 ];
 const COMPS = [
-  {k:'psu', n:'Fuente AC-DC', cls:'cpsu', ref:{l:34,w:20,h:15,o:'v'}, tip:'Referencia: HLK-PM01. Pon 0 en el largo si la fuente no va dentro.'},
+  {k:'psu', n:'Regulador / fuente', cls:'cpsu', ref:{l:0,w:20,h:15,o:'v'}, tip:'Con el acople magnético llegan 5 V por los pogo pins, así que no va fuente AC-DC dentro. Ingresa medidas solo si llevas un regulador.'},
   {k:'mic', n:'Micrófono', cls:'cmic', ref:{l:14,w:14,h:3,o:'v'}, tip:'Va dentro del cuerpo, frente al agujero Øm. Referencia: módulo INMP441 con pines soldados.'},
   {k:'esp', n:'Placa ESP32', cls:'cesp', ref:{l:22.5,w:18,h:4.5,o:'v'}, tip:'Referencia: ESP32-C3 SuperMini. Incluye conector USB, antena y pines que sobresalgan.'},
 ];
 // medidas que el usuario dejó en los comentarios del plano (27-10-2026)
-const SEED = {Hb:'65', D:'80', Db:'70', Hk:'60', Du:'65', Dk:'30', er:'1'};
+const SEED = {Hb:'65', D:'80', Hk:'60', Du:'65', Dk:'46'};
 const ALL = GROUPS.flatMap(g=>g.fields);
 const STORE = 'ampolleta-esp32-medidas-v2';
 let vals = {}, meta = {proj:'Ampolleta ESP32 + micrófono', by:'', rev:'B', unit:'mm', seeded:false};
 try{ const s = JSON.parse(localStorage.getItem(STORE)||'null'); if(s){vals=s.vals||{}; meta=Object.assign(meta,s.meta||{});} }catch(e){}
-if(!meta.seeded){ for(const k in SEED) if(vals[k]==null || vals[k]==='') vals[k]=SEED[k]; meta.seeded=true; }
+if(!meta.seeded){ for(const k in SEED) if(vals[k]==null || vals[k]==='') vals[k]=SEED[k]; meta.seeded=true; meta.v=3; }
+// v3: la rosca E27 pasa a acople magnético; la base del cuerpo de referencia (30) ya no recibe el acople de Ø40
+if((meta.v||1) < 3){ if(vals.Dk==='30') vals.Dk='46'; meta.v=3; }
 const save = ()=>{ try{ localStorage.setItem(STORE, JSON.stringify({vals,meta})); }catch(e){} };
 save();
 
@@ -249,29 +359,37 @@ function resolve(){
   return {v:out, m:meas};
 }
 
-/* ---------- geometría (z = altura desde el contacto inferior, ensamblado) ---------- */
+/* ---------- geometría (z = altura desde la cara del acople magnético, ampolleta vertical) ---------- */
 function geom(v){
   const g = Object.assign({}, v);
-  const R = g.R = v.D/2, Zj = g.Zj = v.Hc + v.Hk, rb = v.Db/2;
-  const Zc = g.Zc = Math.max(Zj + v.Hb - R, Zj + 1);
+  const R = g.R = v.D/2, rp = v.Dp/2, rk = v.Dk/2, ru = v.Du/2, e = v.e, Hp = v.Hp;
+  const Zj = g.Zj = Hp + v.Hk, Zr = g.Zr = Zj + v.Hs;          // Zj: cuerpo → anillo · Zr: anillo → domo
+  const Zc = g.Zc = Math.max(Zr + v.Hb - R, Zr + 1);
   g.top = Zc + R; g.L = g.top;
-  g.B = [[rb,Zj],[rb+0.15*(R-rb), Zj+0.4*(Zc-Zj)],[R, Zc-0.45*(Zc-Zj)],[R,Zc]];
-  const bez = t=>{ const u=1-t, B=g.B; return [0,1].map(i=>u*u*u*B[0][i]+3*u*u*t*B[1][i]+3*u*t*t*B[2][i]+t*t*t*B[3][i]); };
-  const bz = []; for(let i=1;i<=20;i++) bz.push(bez(i/20));
+  g.Fp = v.Hm + 1.2;                                            // piso del acople: alojamiento del imán + 1,2 mm
+  // flanco inferior del domo: arco de elipse convexo, del anillo (ru, Zr) a la zona más ancha (R, Zc)
+  const rj = Math.min(ru, 0.98*R), a0 = Math.asin(rj/R), c = (Zc-Zr)/Math.cos(a0);
+  const bz = []; for(let i=1;i<=24;i++){ const t=a0+(Math.PI/2-a0)*i/24; bz.push([R*Math.sin(t), Zc - c*Math.cos(t)]); }
+  g.side = [[rj,Zr], ...bz];
   const arc = r=>{ const a=[]; for(let i=1;i<=24;i++){ const t=i/24*Math.PI/2; a.push([r*Math.cos(t), Zc + r*Math.sin(t)]); } return a; };
-  const rc = v.Dc/2, rt = v.Dt/2, e = v.e, er = Math.min(v.er, rc-0.5);
   const mx = x=>Math.max(x,0.5);
-  g.body   = [[v.Dk/2,v.Hc],[v.Du/2,Zj],[rb,Zj], ...bz, ...arc(R)];
-  g.bodyIn = [[mx(v.Dk/2-e),v.Hc],[mx(v.Du/2-e),Zj],[mx(rb-e),Zj], ...bz.map(p=>[mx(p[0]-e),p[1]]), ...arc(mx(R-e))];
-  g.cap    = [[rt,0],[rt,1.2],[rt+1.2,1.2],[rc-1,v.Hi],[rc,v.Hi],[rc,v.Hc]];
-  g.capIn  = [[rc-er,v.Hi],[rc-er,v.Hc]];
+  g.er = 2; g.rpi = mx(Math.min(rp-2.5, rk-e));                  // pared del anillo sensorial · radio interior del acople
+  // perfiles [r, z] de cada pieza, exterior e interior
+  g.shellOut = [[rp,0],[rp,Hp],[rk,Hp],[ru,Zj]];
+  const Hh = Hp + 2;                                            // hombro de 2 mm entre el acople y el cono
+  g.shellIn  = [[g.rpi,g.Fp],[g.rpi,Hh],[mx(rk-e + (ru-rk)*2/Math.max(v.Hk,2)),Hh],[mx(ru-e),Zj]];
+  g.ringOut  = [[ru,Zj],[ru,Zr]];  g.ringIn = [[mx(ru-g.er),Zj],[mx(ru-g.er),Zr]];
+  g.domeOut  = [[ru,Zr], ...bz, ...arc(R)];
+  g.domeIn   = [[mx(ru-e),Zr], ...bz.map(p=>[mx(p[0]-e),p[1]]), ...arc(mx(R-e))];
+  g.body   = [...g.shellOut, ...g.domeOut];
+  g.bodyIn = [...g.shellIn, ...(v.Hs>0? g.ringIn : []), ...g.domeIn];
   const lerp = (P,z)=>{ let best=Infinity;
     for(let i=0;i<P.length-1;i++){ const [x1,z1]=P[i],[x2,z2]=P[i+1]; if(z2>z1 && z>=z1 && z<=z2) best=Math.min(best, x1+(x2-x1)*(z-z1)/(z2-z1)); }
     return best===Infinity?0:best; };
-  g.rIn  = z=> z < v.Hc ? lerp(g.capIn,z) : lerp(g.bodyIn,z);
+  g.rIn  = z=> lerp(g.bodyIn,z);
   g.rOut = z=> lerp(g.body,z);
-  // componentes apilados desde la base del cuerpo + Z0
-  let z = v.Hc + v.z0; g.comps = [];
+  // componentes apilados desde la base del cuerpo (hombro sobre el acople) + Z0
+  let z = Hp + v.z0; g.comps = [];
   for(const c of COMPS){
     const l=v[c.k+'_l'], w=v[c.k+'_w'], h=v[c.k+'_h'], o=v[c.k+'_o'];
     if(!(l>0&&w>0&&h>0)){ g.comps.push({c,off:true}); continue; }
@@ -283,20 +401,25 @@ function geom(v){
     z = z2 + v.gap;
   }
   g.mic = g.comps.find(c=>c.c.k==='mic' && !c.off) || null;
-  if(g.mic){ g.micZ=(g.mic.z1+g.mic.z2)/2; g.micInBody = g.mic.z1>=v.Hc && g.mic.z2<=Zj; }
+  if(g.mic){ g.micZ=(g.mic.z1+g.mic.z2)/2; g.micInBody = g.mic.z1>=Hp && g.mic.z2<=Zj; }
   return g;
 }
 
 /* ---------- dibujo ---------- */
 function draw(v, m){
-  const g = geom(v), R=g.R, fs=3.3, X=12;   // X: separación de la rosca en vista explosionada
-  const ox1 = 14 + R + 26, oy = 14 + 18 + g.top;
-  const ox2 = ox1 + R + 22 + 24 + R;
-  const W = ox2 + R + 66;
-  const row2 = oy + X + 42, cx = ox1, cy = row2 + 10 + R;
-  const H = cy + R + 16;
+  const narrow = NARROW.matches;                                   // móvil: frontal, corte e inferior una bajo otra
+  const g = geom(v), R=g.R, fs = narrow? 4.2 : 3.3;
+  const sq = {Tp:Math.max(5, v.Hm+1.5), Hch:14, Tt:3}, Hsq = sq.Tp+sq.Hch+sq.Tt;   // soquete: plato pogo, cámara de cables, tapa
+  const X = v.Cd + 12;                                             // X: separación del soquete en la vista explosionada
+  const ox1 = 14 + R + 26, oy = 14 + 22 + g.top;
+  const row2 = oy + X + Hsq + 7*4 + 18;                            // título de la vista frontal
+  const ox2 = narrow? ox1 : ox1 + R + 22 + 24 + R, oy2 = narrow? row2 + 36 + g.top : oy;
+  const row2c = narrow? oy2 + X + Hsq + 18 : row2;                 // título del corte
+  const W = narrow? ox1 + R + 72 : ox2 + R + 66;
+  const cx = ox1, cy = row2c + 10 + R, tbH = 70;
+  const H = narrow? cy + R + 20 + tbH + 8 : cy + R + 16;
   const P = (o,x,z)=>`${(o.x+x).toFixed(2)},${(o.y-z).toFixed(2)}`;
-  const V1={x:ox1,y:oy}, V2={x:ox2,y:oy}, VC1={x:ox1,y:oy+X}, VC2={x:ox2,y:oy+X};
+  const V1={x:ox1,y:oy}, V2={x:ox2,y:oy2}, VC1={x:ox1,y:oy+X}, VC2={x:ox2,y:oy2+X};
   const mk = (code,val,r)=>({r, t:`<tspan class="dc">${code} </tspan>${r?'≈':''}${fu(val)}<tspan class="dc"> ${un()}</tspan>`});
   const lab = (k,code)=>mk(code, v[k], !m[k]);
   const Z = z=>` data-z="${z}" tabindex="0" role="button" aria-label="Ver medidas: ${z}"`;
@@ -324,49 +447,68 @@ function draw(v, m){
   s += `<rect class="fs" x="0" y="0" width="${W}" height="${H}"/><rect class="frame" x="5" y="5" width="${W-10}" height="${H-10}"/>`;
 
   /* --- Vista frontal --- */
-  const rc=v.Dc/2, rr=rc-0.9, rt=v.Dt/2, o=V1, oc=VC1;
-  s += `<line class="axis" x1="${o.x}" y1="${o.y+X+5}" x2="${o.x}" y2="${o.y-g.top-5}"/>`;
-  const B=g.B;
-  s += `<path class="o fg"${Z('bulbo')} d="M${P(o,B[0][0],B[0][1])}C${P(o,B[1][0],B[1][1])} ${P(o,B[2][0],B[2][1])} ${P(o,R,g.Zc)}A${R} ${R} 0 0 0 ${P(o,-R,g.Zc)}C${P(o,-B[2][0],B[2][1])} ${P(o,-B[1][0],B[1][1])} ${P(o,-B[0][0],B[0][1])}Z"/>`;
-  s += `<path class="o fb"${Z('cuerpo')} d="M${P(o,-v.Dk/2,v.Hc)}L${P(o,v.Dk/2,v.Hc)}L${P(o,v.Du/2,g.Zj)}L${P(o,-v.Du/2,g.Zj)}Z"/>`;
+  const rp=v.Dp/2, ru=v.Du/2, rk=v.Dk/2, Rs=v.Ds/2, rcup=rp+0.3, rch=rp-3, re=v.Ad/2+3, o=V1, oc=VC1;
+  s += `<line class="axis" x1="${o.x}" y1="${oc.y+Hsq+5}" x2="${o.x}" y2="${o.y-g.top-5}"/>`;
+  const side=g.side.map(p=>P(o,p[0],p[1])).join('L'), sideL=g.side.slice().reverse().map(p=>P(o,-p[0],p[1])).join('L');
+  s += `<path class="o fg"${Z('bulbo')} d="M${side}A${R} ${R} 0 0 0 ${P(o,-R,g.Zc)}L${sideL}Z"/>`;
+  if(v.Hs>0){ const zm=(g.Zj+g.Zr)/2;
+    s += `<rect class="o fi"${Z('anillo')} x="${o.x-ru}" y="${o.y-g.Zr}" width="${2*ru}" height="${v.Hs}"/>`;
+    if(v.Oc>0) s += `<circle class="o fm"${Z('anillo')} cx="${o.x}" cy="${o.y-zm}" r="${Math.max(Math.min(v.Oc/2, v.Hs/2-1),0.5)}"/>`;
+    for(const k of [-1,1]) s += `<circle class="fs" cx="${o.x+k*ru*0.71}" cy="${o.y-zm}" r=".6"/>`; }
+  s += `<path class="o fb"${Z('cuerpo')} d="M${P(o,-rk,v.Hp)}L${P(o,rk,v.Hp)}L${P(o,ru,g.Zj)}L${P(o,-ru,g.Zj)}Z"/>`;
+  for(const f of [-0.8,-0.55,-0.3,0,0.3,0.55,0.8]) s += `<line class="thin" x1="${o.x+f*rk}" y1="${o.y-v.Hp-2}" x2="${o.x+f*ru}" y2="${o.y-g.Zj+2}"/>`;   // aletas
   if(g.mic && g.micInBody && v.Om>0) s += `<circle class="o fs"${Z('cuerpo')} cx="${o.x}" cy="${o.y-g.micZ}" r="${v.Om/2}"/>`;
-  // rosca (pieza aparte, desplazada X hacia abajo)
-  s += `<line class="hid" x1="${oc.x-rc}" y1="${oc.y-v.Hc}" x2="${o.x-v.Dk/2+0.4}" y2="${o.y-v.Hc}"/><line class="hid" x1="${oc.x+rc}" y1="${oc.y-v.Hc}" x2="${o.x+v.Dk/2-0.4}" y2="${o.y-v.Hc}"/>`;
-  const step=Math.max(v.P,0.8)/2, right=[], left=[];
-  for(let z=v.Hi, i=0; z<=v.Hc+1e-6; z+=step, i++){ right.push(P(oc, i%2? rr: rc, z)); left.push(P(oc, -(i%2? rc: rr), z)); }
-  s += `<path class="o fmag"${Z('rosca')} d="M${P(oc,rc,v.Hi)}L${right.join('L')}L${P(oc,rc,v.Hc)}L${P(oc,-rc,v.Hc)}L${left.reverse().join('L')}L${P(oc,-rc,v.Hi)}Z"/>`;
-  for(let z=v.Hi+2*step; z<=v.Hc-1e-6; z+=2*step){ s += `<line class="thin" x1="${oc.x-rc}" y1="${oc.y-(z-step)}" x2="${oc.x+rc}" y2="${oc.y-z}"/>`; }
-  s += `<path class="o fi"${Z('aislante')} d="M${P(oc,-(rc-1),v.Hi)}L${P(oc,rc-1,v.Hi)}L${P(oc,rt+1.2,1.2)}L${P(oc,-(rt+1.2),1.2)}Z"/>`;
-  s += `<rect class="o fm"${Z('contacto')} x="${oc.x-rt}" y="${oc.y-1.2}" width="${v.Dt}" height="1.2"/>`;
-  s += `<text class="sm" font-size="${fs*0.8}" x="${oc.x-rc-3}" y="${oc.y-v.Hc*0.62}" text-anchor="end" font-weight="600">ACOPLE MAGNÉTICO</text>`;
-  s += `<text class="sm" font-size="${fs*0.72}" x="${oc.x-rc-3}" y="${oc.y-v.Hc*0.62+fs*0.95}" text-anchor="end">pieza aparte</text>`;
+  s += `<rect class="o fm"${Z('acople')} x="${o.x-rp}" y="${o.y-v.Hp}" width="${2*rp}" height="${v.Hp}"/>`;
+  s += `<rect class="o fm"${Z('acople')} x="${o.x-1.5}" y="${o.y-v.Hp}" width="3" height="${v.Hp}"/>`;   // nervio KEY, al frente
+  // soquete (pieza del brazo), separado X hacia abajo; en la lámina la ampolleta va de pie, así que el soquete mira hacia arriba
+  const zb = -(sq.Tp+sq.Hch);
+  s += `<path class="o fb"${Z('soquete')} d="M${P(oc,Rs-1,zb)}L${P(oc,Rs+2*re+2,zb)}L${P(oc,Rs+2*re+2,0)}L${P(oc,Rs-1,0)}Z"/>`;
+  s += `<circle class="hid" cx="${oc.x+Rs+re+2}" cy="${oc.y-zb/2}" r="${v.Bt/2}"/>`;
+  s += `<path class="o fb"${Z('soquete')} d="M${P(oc,-Rs,v.Cd)}L${P(oc,Rs,v.Cd)}L${P(oc,Rs,zb)}L${P(oc,-Rs,zb)}Z"/>`;
+  s += `<rect class="o fb"${Z('soquete')} x="${oc.x-Rs}" y="${oc.y-zb}" width="${2*Rs}" height="${sq.Tt}"/>`;
+  s += `<path class="hid" d="M${P(oc,-rcup,v.Cd)}L${P(oc,-rcup,0)}L${P(oc,rcup,0)}L${P(oc,rcup,v.Cd)}M${P(oc,-rch,-sq.Tp)}L${P(oc,-rch,zb)}M${P(oc,rch,-sq.Tp)}L${P(oc,rch,zb)}M${P(oc,-rch,-sq.Tp)}L${P(oc,rch,-sq.Tp)}"/>`;
+  for(const x of [-v.Pc/2*Math.cos(Math.PI/6), 0, v.Pc/2*Math.cos(Math.PI/6)]) s += `<rect class="o fm" x="${oc.x+x-0.65}" y="${oc.y-0.8}" width="1.3" height="${0.8+sq.Tp}"/>`;
+  s += `<line class="hid" x1="${oc.x-rcup}" y1="${oc.y-v.Cd}" x2="${o.x-rp+0.4}" y2="${o.y}"/><line class="hid" x1="${oc.x+rcup}" y1="${oc.y-v.Cd}" x2="${o.x+rp-0.4}" y2="${o.y}"/>`;
+  s += `<text class="sm" font-size="${fs*0.8}" x="${oc.x-Rs-3}" y="${oc.y+Hsq*0.55}" text-anchor="end" font-weight="600">SOQUETE SHU</text>`;
+  s += `<text class="sm" font-size="${fs*0.72}" x="${oc.x-Rs-3}" y="${oc.y+Hsq*0.55+fs*0.95}" text-anchor="end">hembra · va en el brazo</text>`;
   // indicador de corte
-  s += `<line class="cut" x1="${o.x-3}" y1="${o.y-g.top-7}" x2="${o.x+3}" y2="${o.y-g.top-7}"/><line class="cut" x1="${o.x-3}" y1="${oc.y+7}" x2="${o.x+3}" y2="${oc.y+7}"/>`;
-  s += `<text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${o.y-g.top-5.8}">A</text><text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${oc.y+8.2}">A</text>`;
+  s += `<line class="cut" x1="${o.x-3}" y1="${o.y-g.top-12}" x2="${o.x+3}" y2="${o.y-g.top-12}"/><line class="cut" x1="${o.x-3}" y1="${oc.y+Hsq+4}" x2="${o.x+3}" y2="${oc.y+Hsq+4}"/>`;
+  s += `<text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${o.y-g.top-10.8}">A</text><text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${oc.y+Hsq+5.2}">A</text>`;
   // cotas
   const xl = -R-16;
-  dimV(o, xl, v.Hc, g.top, -v.Dk/2, 0, mk('H cuerpo+bulbo', g.top-v.Hc, !m.Hk||!m.Hb), 'l');
-  dimV(oc, xl, 0, v.Hc, -rt, -rc, lab('Hc','Hc'), 'l');
+  dimV(o, xl, v.Hp, g.top, -rk, 0, mk('H cuerpo+anillo+domo', g.top-v.Hp, !m.Hk||!m.Hb||!m.Hs), 'l');
+  dimV(o, xl, 0, v.Hp, -rp, -rp, lab('Hp','Hp'), 'l');
+  dimV(oc, -Rs-9, 0, v.Cd, -rcup, -Rs, lab('Cd','Cd'), 'l');
   const xc = R+9;
-  dimV(oc, xc, 0, v.Hi, rt, rc-1, lab('Hi','Hi'), 'r');
-  dimV(oc, xc, v.Hi, v.Hc, rc, rc, mk('rosca', v.Hc-v.Hi, !m.Hc||!m.Hi), 'r');
-  dimV(o, xc, v.Hc, g.Zj, v.Dk/2, v.Du/2, lab('Hk','Hk'), 'r');
-  dimV(o, xc, g.Zj, g.top, v.Db/2, 0, lab('Hb','Hb'), 'r');
+  dimV(o, xc, v.Hp, g.Zj, rk, ru, lab('Hk','Hk'), 'r');
+  if(v.Hs>0) dimV(o, xc, g.Zj, g.Zr, ru, ru, lab('Hs','Hs'), 'r');
+  dimV(o, xc, g.Zr, g.top, ru, 0, lab('Hb','Hb'), 'r');
   dimH(o, g.top+7, -R, R, g.Zc, g.Zc, lab('D','Ø'));
-  dimH(o, -X-9,  -rc, rc, v.Hi-X, v.Hi-X, lab('Dc','Ø'));
-  dimH(o, -X-16, -v.Dk/2, v.Dk/2, v.Hc, v.Hc, lab('Dk','Ø'));
-  dimH(o, -X-23, -v.Du/2, v.Du/2, g.Zj, g.Zj, lab('Du','Ø'));
-  dimH(o, -X-30, -v.Db/2, v.Db/2, g.Zj, g.Zj, lab('Db','Ø'));
+  const zd = -X-Hsq-11;
+  dimH(o, zd,    -Rs, Rs, zb-X-sq.Tt, zb-X-sq.Tt, lab('Ds','Ø'));
+  dimH(o, zd-7,  -rp, rp, 0, 0, lab('Dp','Ø'));
+  dimH(o, zd-14, -rk, rk, v.Hp, v.Hp, lab('Dk','Ø'));
+  dimH(o, zd-21, -ru, ru, g.Zj, g.Zj, lab('Du','Ø'));
   s += `<text class="vt" font-size="${fs*1.05}" x="${o.x}" y="${row2}" text-anchor="middle">VISTA FRONTAL · EXPLOSIONADA</text>`;
 
   /* --- Corte A–A --- */
   const o2=V2, oc2=VC2;
   s += `<path class="fc" d="${mirror(o2,g.bodyIn)}"/>`;
-  s += `<path class="o"${Z('pared')} fill="url(#hatch)" fill-rule="evenodd" d="${mirror(o2,g.body)} ${mirror(o2,g.bodyIn)}"/>`;
+  s += `<path class="o"${Z('pared')} fill="url(#hatch)" fill-rule="evenodd" d="${mirror(o2,g.shellOut)} ${mirror(o2,g.shellIn)}"/>`;
+  if(v.Hs>0) s += `<path class="o"${Z('anillo')} fill="url(#hatch2)" fill-rule="evenodd" d="${mirror(o2,g.ringOut)} ${mirror(o2,g.ringIn)}"/>`;
+  s += `<path class="o"${Z('pared')} fill="url(#hatch)" fill-rule="evenodd" d="${mirror(o2,g.domeOut)} ${mirror(o2,g.domeIn)}"/>`;
   s += `<path class="thin" d="${mirror(o2,g.bodyIn)}"/>`;
-  s += `<path class="fc" d="${mirror(oc2,g.capIn)}"/>`;
-  s += `<path class="o"${Z('rosca')} fill="url(#hatch2)" fill-rule="evenodd" d="${mirror(oc2,g.cap)} ${mirror(oc2,g.capIn)}"/>`;
-  s += `<line class="axis" x1="${o2.x}" y1="${oc2.y+5}" x2="${o2.x}" y2="${o2.y-g.top-5}"/>`;
+  const zb2 = -(sq.Tp+sq.Hch);
+  s += `<path class="o"${Z('soquete')} fill="url(#hatch2)" d="${mirror(oc2,[[0,0],[rcup,0],[rcup,v.Cd],[Rs,v.Cd],[Rs,zb2],[rch,zb2],[rch,-sq.Tp],[0,-sq.Tp]])}"/>`;
+  for(const k of [-1,1]) s += `<path class="o"${Z('soquete')} fill="url(#hatch2)" d="M${P(oc2,k*4,zb2)}L${P(oc2,k*Rs,zb2)}L${P(oc2,k*Rs,zb2-sq.Tt)}L${P(oc2,k*4,zb2-sq.Tt)}Z"/>`;
+  for(const k of [-1,1]){ const x=k*v.Pm/2;
+    s += `<rect class="o fi"${Z('acople')} x="${o2.x+x-v.Dm/2}" y="${o2.y-v.Hm}" width="${v.Dm}" height="${v.Hm}"/>`;     // imanes del acople
+    s += `<rect class="o fi"${Z('soquete')} x="${oc2.x+x-v.Dm/2}" y="${oc2.y}" width="${v.Dm}" height="${v.Hm}"/>`; }   // imanes del soquete
+  for(const k of [-1,1]) s += `<rect class="o fm" x="${oc2.x+k*v.Pc/2-0.65}" y="${oc2.y-0.8}" width="1.3" height="${0.8+sq.Tp}"/>`;     // pogo pins
+  s += `<polyline class="thin" points="${oc2.x+v.Pc/2},${oc2.y+sq.Tp/2} ${oc2.x+Rs+6},${oc2.y+sq.Tp/2+3} ${oc2.x+Rs+9},${oc2.y+sq.Tp/2+3}"/>`;
+  s += `<text class="sm" font-size="${fs*0.85}" x="${oc2.x+Rs+10}" y="${oc2.y+sq.Tp/2+4}">6 pogo P75-E2 · PCD Ø${fu(v.Pc)}</text>`;
+  s += `<text class="sm" font-size="${fs*0.85}" x="${oc2.x+Rs+10}" y="${oc2.y+sq.Tp/2+4+fs}">6 + 6 imanes N52 Ø${fu(v.Dm)}×${fu(v.Hm)}</text>`;
+  s += `<line class="axis" x1="${o2.x}" y1="${oc2.y+Hsq+5}" x2="${o2.x}" y2="${o2.y-g.top-5}"/>`;
   if(g.mic && g.micInBody && v.Om>0){ const zm=g.micZ, ri=g.rIn(zm), ro=g.rOut(zm);
     s += `<rect class="fs" x="${o2.x+ri-0.3}" y="${o2.y-zm-v.Om/2}" width="${ro-ri+0.8}" height="${v.Om}"/>`;
     s += `<line class="thin" x1="${o2.x+ri}" y1="${o2.y-zm-v.Om/2}" x2="${o2.x+ro}" y2="${o2.y-zm-v.Om/2}"/><line class="thin" x1="${o2.x+ri}" y1="${o2.y-zm+v.Om/2}" x2="${o2.x+ro}" y2="${o2.y-zm+v.Om/2}"/>`; }
@@ -382,32 +524,34 @@ function draw(v, m){
     s += `<text font-size="${fs}" x="${o2.x+lx+1}" y="${o2.y-L.z+0.2}" font-weight="600">${esc(c.c.n)}</text>`;
     const msg = c.fits? `cabe · holgura ${fum(c.slack)}` : (c.over? 'sobrepasa el difusor' : `no cabe · faltan ${fum(-c.slack)}`);
     s += `<text class="${c.fits?'ok':'bad'}" font-size="${fs*0.82}" x="${o2.x+lx+1}" y="${o2.y-L.z+fs*1.05}">${msg}</text>`; }
-  s += `<polyline class="thin" points="${oc2.x+rc-v.er/2},${oc2.y-v.Hc*0.6} ${oc2.x+rc+8},${oc2.y-v.Hc*0.6-4} ${oc2.x+rc+11},${oc2.y-v.Hc*0.6-4}"/>`;
-  s += `<text class="dt${m.er?'':' ref'}" font-size="${fs*0.85}" x="${oc2.x+rc+12}" y="${oc2.y-v.Hc*0.6-3}"><tspan class="dc">pared </tspan>${m.er?'':'≈'}${fu(v.er)}<tspan class="dc"> ${un()}</tspan></text>`;
-  if(v.z0>0.5) dimV(o2, -R-12, v.Hc, v.Hc+v.z0, -v.Dk/2, -g.rIn(v.Hc+v.z0), lab('z0','Z₀'), 'l');
-  s += `<text class="vt" font-size="${fs*1.05}" x="${o2.x}" y="${row2}" text-anchor="middle">CORTE A–A</text>`;
+  if(v.z0>0.5) dimV(o2, -R-12, v.Hp, v.Hp+v.z0, -v.Dk/2, -g.rIn(v.Hp+v.z0), lab('z0','Z₀'), 'l');
+  s += `<text class="vt" font-size="${fs*1.05}" x="${o2.x}" y="${row2c}" text-anchor="middle">CORTE A–A</text>`;
 
   /* --- Vista inferior (ensamblada) --- */
-  const circ=[{r:R,k:'D',cls:'fg',z:'bulbo'},{r:v.Db/2,k:'Db',cls:'fg',z:'bulbo'},{r:v.Du/2,k:'Du',cls:'fb',z:'cuerpo'},{r:v.Dk/2,k:'Dk',cls:'fb',z:'cuerpo'},{r:rc,k:'Dc',cls:'fmag',z:'rosca'},{r:rc-1,k:null,cls:'fi',z:'aislante'},{r:rt,k:'Dt',cls:'fm',z:'contacto'}];
+  const circ=[{r:R,k:'D',cls:'fg',z:'bulbo'},{r:ru,k:'Du',cls:'fi',z:'anillo'},{r:rk,k:'Dk',cls:'fb',z:'cuerpo'},{r:rp,k:'Dp',cls:'fm',z:'acople'}];
   for(const c of circ.slice().sort((a,b)=>b.r-a.r)){ s += `<circle class="o ${c.cls}"${Z(c.z)} cx="${cx}" cy="${cy}" r="${Math.max(c.r,0.3)}"/>`; }
-  s += `<circle class="hid" cx="${cx}" cy="${cy}" r="${rr}"/>`;
+  for(let i=0;i<6;i++){ const a=(30+i*60)*Math.PI/180, b=i*60*Math.PI/180;
+    s += `<circle class="o fmag"${Z('acople')} cx="${cx+v.Pc/2*Math.cos(a)}" cy="${cy-v.Pc/2*Math.sin(a)}" r="1.5"/>`;
+    s += `<circle class="o fi"${Z('acople')} cx="${cx+v.Pm/2*Math.cos(b)}" cy="${cy-v.Pm/2*Math.sin(b)}" r="${v.Dm/2}"/>`; }
+  s += `<rect class="o fm"${Z('acople')} x="${cx-1.5}" y="${cy+rp-0.5}" width="3" height="2"/>`;
+  s += `<text class="sm" font-size="${fs*0.7}" x="${cx}" y="${cy+rp+4.4}" text-anchor="middle">KEY</text>`;
   s += `<line class="axis" x1="${cx-R-4}" y1="${cy}" x2="${cx+R+4}" y2="${cy}"/><line class="axis" x1="${cx}" y1="${cy-R-4}" x2="${cx}" y2="${cy+R+4}"/>`;
-  const tl = circ.filter(c=>c.k); const tx = cx+R+5;
+  const tl = [...circ, {r:v.Pm/2,k:'Pm',code:'Pm Ø'}, {r:v.Pc/2,k:'Pc',code:'Pc Ø'}]; const tx = cx+R+5;
   tl.forEach((c,i)=>{ const ty = cy - R*0.85 + i*((R*1.7)/(tl.length-1||1)); const dy=ty-cy;
     const px = Math.abs(dy)<c.r ? cx+Math.sqrt(c.r*c.r-dy*dy) : cx+c.r*0.7, py = Math.abs(dy)<c.r? ty : cy-c.r*0.7;
-    const L=lab(c.k,'Ø'), cl=L.r?' ref':'';
+    const L=lab(c.k,c.code||'Ø'), cl=L.r?' ref':'';
     s += `<polyline class="ext${cl}" points="${px},${py} ${tx},${ty} ${tx+3},${ty}"/><circle class="arr${cl}" cx="${px}" cy="${py}" r=".55"/>`;
     s += `<text class="dt${cl}" font-size="${fs}" x="${tx+3.6}" y="${ty+1.1}">${L.t}</text>`; });
-  s += `<text class="vt" font-size="${fs*1.05}" x="${cx}" y="${cy+R+9}" text-anchor="middle">VISTA INFERIOR</text>`;
+  s += `<text class="vt" font-size="${fs*1.05}" x="${cx}" y="${cy+R+9}" text-anchor="middle">VISTA INFERIOR · CARA DEL ACOPLE</text>`;
 
   /* --- Cajetín --- */
-  const bx = cx+R+40, bw = W-12-bx, by = row2+6, bh = H-12-by;
+  const bx = narrow? 12 : cx+R+46, bw = W-12-bx, by = narrow? cy+R+20 : row2+6, bh = narrow? tbH : H-12-by;
   if(bw>40){
-    const rows=[['PROYECTO',meta.proj||'—'],['PIEZA',`Ampolleta · rosca E27 con acople magnético`],['DIBUJÓ',meta.by||'—'],['FECHA',new Date().toLocaleDateString('es-CL')],['ESCALA',`S/E · cotas en ${un()}`],['LÁMINA',`1/1 · Rev. ${meta.rev||'B'}`]];
+    const rows=[['PROYECTO',meta.proj||'—'],['PIEZA',`Ampolleta-cerebro SHU · acople magnético`],['DIBUJÓ',meta.by||'—'],['FECHA',new Date().toLocaleDateString('es-CL')],['ESCALA',`S/E · cotas en ${un()}`],['LÁMINA',`1/1 · Rev. ${meta.rev||'B'}`]];
     const nh = bh*0.36, rh=(bh-nh)/rows.length;
     s += `<rect class="tb" x="${bx}" y="${by}" width="${bw}" height="${bh}"/>`;
     s += `<text font-size="${fs*0.9}" font-weight="700" x="${bx+2.5}" y="${by+fs*1.2}" letter-spacing=".1em">NOTAS</text>`;
-    const notes=[isCm()?'Cotas en centímetros (1 cm = 10 mm).':'Cotas en milímetros (10 mm = 1 cm).','Cotas con ≈ son de referencia: aún sin medir.',`Altura total ensamblada: ${fum(g.top)}.`,'Rosca dibujada separada: acople magnético aparte.'];
+    const notes=[isCm()?'Cotas en centímetros (1 cm = 10 mm).':'Cotas en milímetros (10 mm = 1 cm).','Cotas con ≈ son de referencia: aún sin medir.',`Altura total ensamblada: ${fum(g.top)}.`,'Soquete separado: va en el brazo (pieza 001).'];
     notes.forEach((n,i)=>{ s+=`<text class="sm" font-size="${fs*0.8}" x="${bx+2.5}" y="${by+fs*1.2+(i+1)*fs*1.1}">${i+1}. ${esc(n)}</text>`; });
     rows.forEach((r,i)=>{ const y=by+nh+i*rh;
       s += `<line class="tb" x1="${bx}" y1="${y}" x2="${bx+bw}" y2="${y}"/>`;
@@ -425,25 +569,25 @@ function zoneInfo(z,v,m,g){
   const r = (code,n,val,meas,k,txt)=>({code,n,val,meas,k,txt});
   const all = (...ks)=>ks.every(k=>m[k]);
   switch(z){
-    case 'bulbo': return {t:'Bulbo (difusor)', rows:[r('Hb','Altura del bulbo',v.Hb,m.Hb,'Hb'), r('D','Diámetro máximo',v.D,m.D,'D'), r('Db','Diámetro inferior',v.Db,m.Db,'Db'), r('—','Ceja sobre el cuerpo, por lado',(v.Db-v.Du)/2,all('Db','Du'),'Db'), r('L','Altura total ensamblada',g.top,all('Hb','Hk','Hc'),'Hb')]};
-    case 'cuerpo': return {t:'Cuerpo', rows:[r('Hk','Altura del cuerpo',v.Hk,m.Hk,'Hk'), r('Du','Ø superior',v.Du,m.Du,'Du'), r('Dk','Ø inferior',v.Dk,m.Dk,'Dk'), r('e','Espesor de pared',v.e,m.e,'e'), r('Øm','Ø agujero micrófono',v.Om,m.Om,'Om'), r('Z','Altura del agujero, sobre la base del cuerpo',0,true,'Om', g.mic? fum(g.micZ-v.Hc) : 'sin micrófono')]};
-    case 'rosca': return {t:'Rosca · acople magnético (pieza aparte)', rows:[r('Hc','Altura de la rosca',v.Hc,m.Hc,'Hc'), r('Dc','Ø exterior rosca',v.Dc,m.Dc,'Dc'), r('er','Espesor de pared',v.er,m.er,'er'), r('Ø int','Ø interior',v.Dc-2*v.er,all('Dc','er'),'Dc'), r('P','Paso de rosca',v.P,m.P,'P'), r('—','Largo roscado',v.Hc-v.Hi,all('Hc','Hi'),'Hc'), r('—','Hilos visibles',0,all('Hc','Hi','P'),'P', v.P>0? f((v.Hc-v.Hi)/v.P)+' hilos':'—')]};
-    case 'aislante': return {t:'Aislante', rows:[r('Hi','Altura aislante + contacto',v.Hi,m.Hi,'Hi'), r('Ø','Ø superior (aprox.)',v.Dc-2,m.Dc,'Dc'), r('Ø','Ø inferior (aprox.)',v.Dt+2.4,m.Dt,'Dt')]};
-    case 'contacto': return {t:'Contacto inferior', rows:[r('Dt','Ø contacto',v.Dt,m.Dt,'Dt'), r('—','Espesor dibujado',1.2,false,'Dt')]};
-    case 'pared': return {t:'Pared del cuerpo y bulbo (corte A–A)', rows:[r('e','Espesor de pared',v.e,m.e,'e'), r('Ø int','Ø interior en la base del cuerpo',2*g.rIn(v.Hc+0.01),all('Dk','e'),'Dk'), r('Ø int','Ø interior bajo el bulbo',2*g.rIn(g.Zj-0.01),all('Du','e'),'Du'), r('Ø int','Ø interior máximo del bulbo',2*g.rIn(g.Zc),all('D','e'),'D'), r('Z₀','Inicio de montaje',v.z0,m.z0,'z0')]};
+    case 'bulbo': return {t:'Bulbo (difusor)', rows:[r('Hb','Altura del bulbo',v.Hb,m.Hb,'Hb'), r('D','Diámetro máximo',v.D,m.D,'D'), r('Du','Diámetro inferior (= Ø del anillo)',v.Du,m.Du,'Du'), r('L','Altura total de la ampolleta',g.top,all('Hb','Hk','Hp','Hs'),'Hb')]};
+    case 'cuerpo': return {t:'Cuerpo', rows:[r('Hk','Altura del cuerpo',v.Hk,m.Hk,'Hk'), r('Du','Ø superior',v.Du,m.Du,'Du'), r('Dk','Ø inferior',v.Dk,m.Dk,'Dk'), r('e','Espesor de pared',v.e,m.e,'e'), r('Øm','Ø agujero micrófono',v.Om,m.Om,'Om'), r('Z','Altura del agujero, sobre la base del cuerpo',0,true,'Om', g.mic? fum(g.micZ-v.Hp) : 'sin micrófono')]};
+    case 'anillo': return {t:'Anillo sensorial', rows:[r('Hs','Alto',v.Hs,m.Hs,'Hs'), r('Du','Ø exterior (= Ø superior del cuerpo)',v.Du,m.Du,'Du'), r('Oc','Ø ventana de la cámara',v.Oc,m.Oc,'Oc'), r('—','Pared',g.er,true,'Hs'), r('—','Micrófonos',0,true,'Hs','4 puertos Ø1,2 a 45°')]};
+    case 'acople': return {t:'Acople magnético (macho, en el cuerpo)', rows:[r('Hp','Alto',v.Hp,m.Hp,'Hp'), r('Dp','Ø exterior',v.Dp,m.Dp,'Dp'), r('Pc','PCD de contactos (6 × Ø3)',v.Pc,m.Pc,'Pc'), r('Pm','PCD de imanes',v.Pm,m.Pm,'Pm'), r('Dm','Imanes N52 (6)',0,all('Dm','Hm'),'Dm', fum(v.Dm)+' × '+fum(v.Hm)), r('—','Piso del acople',g.Fp,m.Hm,'Hm'), r('Cd','Calce en el soquete',v.Cd,m.Cd,'Cd')]};
+    case 'soquete': return {t:'Soquete SHU (hembra, en el brazo)', rows:[r('Ds','Ø exterior',v.Ds,m.Ds,'Ds'), r('Cd','Profundidad de la copa',v.Cd,m.Cd,'Cd'), r('—','Ø de la copa (holgura 0,3 por lado)',v.Dp+0.6,m.Dp,'Dp'), r('—','Pogo pins',0,true,'Pc','6 × P75-E2 · PCD Ø'+fu(v.Pc)), r('—','Alto con tapa',v.Cd+Math.max(5,v.Hm+1.5)+17,m.Cd,'Cd')]};
+    case 'pared': return {t:'Pared del cuerpo y bulbo (corte A–A)', rows:[r('e','Espesor de pared',v.e,m.e,'e'), r('Ø int','Ø interior en la base del cuerpo',2*g.rIn(v.Hp+0.01),all('Dk','e'),'Dk'), r('Ø int','Ø interior bajo el bulbo',2*g.rIn(g.Zj-0.01),all('Du','e'),'Du'), r('Ø int','Ø interior máximo del bulbo',2*g.rIn(g.Zc),all('D','e'),'D'), r('Z₀','Inicio de montaje',v.z0,m.z0,'z0')]};
   }
   const c = g.comps.find(x=>x.c.k===z); if(!c || c.off) return null;
   const k=c.c.k, msg = c.fits? 'Cabe' : (c.over? 'Sobrepasa el difusor' : 'No cabe');
-  return {t:c.c.n, rows:[r('L','Largo',c.l,m[k+'_l'],k+'_l'), r('A','Ancho',c.w,m[k+'_w'],k+'_w'), r('H','Alto',c.h,m[k+'_h'],k+'_h'), r('Z','Desde – hasta, sobre la base del cuerpo',0,true,'z0', fum(c.z1-v.Hc)+' – '+fum(c.z2-v.Hc)), r('Ø','Espacio interior mínimo',2*c.minR,m.e,k+'_l'), r('±','Holgura',c.slack,true,k+'_l', msg+' · '+fum(c.slack))]};
+  return {t:c.c.n, rows:[r('L','Largo',c.l,m[k+'_l'],k+'_l'), r('A','Ancho',c.w,m[k+'_w'],k+'_w'), r('H','Alto',c.h,m[k+'_h'],k+'_h'), r('Z','Desde – hasta, sobre la base del cuerpo',0,true,'z0', fum(c.z1-v.Hp)+' – '+fum(c.z2-v.Hp)), r('Ø','Espacio interior mínimo',2*c.minR,m.e,k+'_l'), r('±','Holgura',c.slack,true,k+'_l', msg+' · '+fum(c.slack))]};
 }
 function renderZone(v,m,g){
   const box=$('zinfo'), info = sel? zoneInfo(sel,v,m,g) : null;
   document.querySelectorAll('#sheet [data-z]').forEach(el=>el.classList.toggle('zsel', el.dataset.z===sel));
-  if(!info){ box.innerHTML = `<p class="hint">Haz click en una zona del plano (bulbo, cuerpo, rosca, aislante, contacto, pared o un componente del corte) para ver sus medidas en ${un()} y su equivalente.</p>`; return; }
+  if(!info){ box.innerHTML = `<p class="hint">Haz click en una zona del plano (domo, anillo, cuerpo, acople, soquete, pared o un componente del corte) para ver sus medidas en ${un()} y su equivalente.</p>`; return; }
   box.innerHTML = `<div class="zh"><h3>${esc(info.t)}</h3><div class="zbtns"><button type="button" id="zedit">Editar en la hoja</button><button type="button" class="ghost" id="zclose">Cerrar</button></div></div>
     <div class="zgrid">${info.rows.map(x=>`<div class="zc"><span class="k">${esc(x.code)}</span><span class="n">${esc(x.n)}</span><span class="v${x.meas?'':' ref'}">${x.txt? esc(x.txt) : (x.meas?'':'≈ ')+fum(x.val)}</span><span class="a">${x.txt? '' : '= '+alt(x.val)}${x.meas?'':' · referencia'}</span></div>`).join('')}</div>`;
   $('zclose').onclick = ()=>{ sel=null; update(); };
-  $('zedit').onclick = ()=>{ const el=$('in-'+info.rows[0].k); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus({preventScroll:true}); } };
+  $('zedit').onclick = ()=>{ const el=$('in-'+info.rows[0].k); if(el){ if(getComputedStyle($('form')).display==='none') setTab('med'); el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus({preventScroll:true}); } };
 }
 function pickZone(e){ const el=e.target.closest('[data-z]'); if(!el) return; sel = (sel===el.dataset.z)? null : el.dataset.z; update(); }
 
@@ -457,8 +601,7 @@ function buildForm(){
         <div class="inp"><div class="box"><input id="in-${fd.k}" data-k="${fd.k}" inputmode="decimal" autocomplete="off"><em class="un">mm</em></div><div class="st" id="st-${fd.k}"></div></div>
         <div class="tip">${fd.tip}</div></div>`;
     }
-    if(g.id==='bulbo') h += `<div class="derived"><span>L, altura total ensamblada (Hc + Hk + Hb)</span><b id="dv-l">—</b></div>`;
-    if(g.id==='casquillo') h += `<div class="derived"><span>Hilos de rosca visibles ((Hc − Hi) ÷ P)</span><b id="dv-hilos">—</b></div>`;
+    if(g.id==='bulbo') h += `<div class="derived"><span>L, altura total de la ampolleta (Hp + Hk + Hs + domo)</span><b id="dv-l">—</b></div>`;
     h += `</div>`;
   }
   h += `<div class="group"><h2>Electrónica<small>de abajo hacia arriba</small></h2>`;
@@ -486,7 +629,7 @@ function buildForm(){
       vals[t.dataset.k] = (isCm() && p!=null && !isNaN(p)) ? String(Math.round(p*10*1e6)/1e6) : t.value; }
     else if(t.dataset.m){ meta[t.dataset.m]=t.value; } else return;
     save(); update(); });
-  document.querySelectorAll('.unit button').forEach(b=>b.addEventListener('click', ()=>{ meta.unit=b.dataset.u; save(); fillInputs(); update(); }));
+  document.querySelectorAll('.unit button[data-u]').forEach(b=>b.addEventListener('click', ()=>{ meta.unit=b.dataset.u; save(); fillInputs(); update(); }));
   $('form').addEventListener('change', e=>{ if(e.target.tagName==='SELECT'){ vals[e.target.dataset.k]=e.target.value; save(); update(); } });
   $('copy').addEventListener('click', copy);
   let armed=false;
@@ -504,7 +647,7 @@ function fillInputs(){
 
 function update(){
   const {v,m} = resolve();
-  document.querySelectorAll('.unit button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.u===un())));
+  document.querySelectorAll('.unit button[data-u]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.u===un())));
   document.querySelectorAll('.un').forEach(e=>e.textContent=un());
   for(const fd of ALL){ const el=$('in-'+fd.k), st=$('st-'+fd.k), p=parse(vals[fd.k]);
     el.placeholder = '≈ '+fu(fd.ref);
@@ -513,29 +656,37 @@ function update(){
     else { st.className='st r'; st.textContent='Ref. · '+alt(v[fd.k]); } }
   for(const c of COMPS) ['l','w','h'].forEach(d=>{ $('in-'+c.k+'_'+d).placeholder='≈ '+fu(c.ref[d]); });
   const g = draw(v,m);
+  queue3d(v,g);
   renderZone(v,m,g);
   const total = Object.keys(m).length, done = Object.values(m).filter(Boolean).length;
   $('pg').textContent = `${done} / ${total}`; $('pgbar').style.width = (done/total*100)+'%';
   $('dv-l').textContent = fum(g.top)+' · '+alt(g.top);
-  $('dv-hilos').textContent = v.P>0? f((v.Hc-v.Hi)/v.P) : '—';
   for(const c of g.comps){ const chip=$('fit-'+c.c.k);
     if(c.off){ chip.className='chip off'; chip.textContent='No incluido'; }
     else if(c.fits){ chip.className='chip ok'; chip.textContent='Cabe · '+fum(c.slack); }
     else { chip.className='chip bad'; chip.textContent= c.over? 'Sobrepasa' : 'Falta '+fum(-c.slack); } }
   const ck=[];
-  ck.push(['ok',`Altura total ensamblada: Hc + Hk + Hb = ${fum(g.top)} (${alt(g.top)}).`]);
+  ck.push(['ok',`Altura total de la ampolleta: Hp + Hk + Hs + domo = ${fum(g.top)} (${alt(g.top)}).`]);
   if(v.Hb < v.D/2) ck.push(['warn',`El bulbo es más bajo que su radio (Hb ${fum(v.Hb)} < D/2 ${fum(v.D/2)}). Lo dibujo como media esfera y la altura queda en ${fum(g.top)}.`]);
-  if(v.Db > v.D) ck.push(['bad',`El Ø inferior del bulbo (${fum(v.Db)}) es mayor que su Ø máximo (${fum(v.D)}).`]);
-  if(v.Db > v.Du) ck.push(['warn',`El bulbo sobresale ${fum((v.Db-v.Du)/2)} por lado sobre el cuerpo (Db ${fum(v.Db)} > Du ${fum(v.Du)}). Lo dibujo como ceja.`]);
-  else if(v.Db < v.Du) ck.push(['warn',`El cuerpo es más ancho que la base del bulbo (Du ${fum(v.Du)} > Db ${fum(v.Db)}).`]);
-  if(v.Hi >= v.Hc) ck.push(['bad',`La altura del aislante (Hi) debe ser menor que la de la rosca (Hc).`]);
-  if(v.Dc > v.Dk + 1) ck.push(['warn',`La rosca (${fum(v.Dc)}) es más ancha que la base del cuerpo (${fum(v.Dk)}). Revisa cómo se acoplan.`]);
-  if(v.P>0 && Math.abs(v.P-3.629)>0.3) ck.push(['warn',`Paso de rosca ${fum(v.P)} distinto al E27 (3,629 mm). ¿Es E14 (2,822 mm) o B22?`]);
-  if(g.mic) ck.push([g.micInBody?'ok':'bad', g.micInBody? `El micrófono queda dentro del cuerpo, con el agujero a ${fum(g.micZ-v.Hc)} sobre su base.` : `El micrófono queda fuera del cuerpo (entre ${fum(g.mic.z1-v.Hc)} y ${fum(g.mic.z2-v.Hc)} sobre su base; el cuerpo mide ${fum(v.Hk)}). Baja Z₀, achica la fuente o acuéstala.`]);
+  if(v.Du > v.D) ck.push(['bad',`El Ø de la unión bulbo–cuerpo (${fum(v.Du)}) es mayor que el Ø máximo del bulbo (${fum(v.D)}).`]);
+  if(v.Dp > v.Dk + 0.01) ck.push(['warn',`El acople (Ø ${fum(v.Dp)}) es más ancho que la base del cuerpo (Ø ${fum(v.Dk)}): queda un escalón hacia afuera.`]);
+  { const a=v.Pc/2, b=v.Pm/2, gap = Math.sqrt(a*a+b*b-2*a*b*Math.cos(Math.PI/6)) - 1.5 - v.Dm/2, wall = v.Dp/2 - b - v.Dm/2;
+    if(gap < 1) ck.push(['bad',`Los imanes quedan a ${fum(Math.max(gap,0))} de los contactos: separa los círculos (Pm y Pc) o usa imanes más chicos.`]);
+    if(wall < 1.2) ck.push(['bad',`Los imanes dejan ${fum(Math.max(wall,0))} de pared en el borde del acople (mínimo 1,2 mm): agranda Dp o achica Pm.`]);
+    if(v.Cd >= v.Hp) ck.push(['bad',`El calce del soquete (Cd) debe ser menor que el alto del acople (Hp).`]);
+    if(gap >= 1 && wall >= 1.2 && v.Cd < v.Hp) ck.push(['ok',`Acople: 6 contactos en PCD Ø${fu(v.Pc)} y 6 imanes Ø${fu(v.Dm)} × ${fu(v.Hm)} por lado con polaridad alternada; con el nervio KEY calza en una sola posición.`]); }
+  if(g.mic) ck.push([g.micInBody?'ok':'bad', g.micInBody? `El micrófono queda dentro del cuerpo, con el agujero a ${fum(g.micZ-v.Hp)} sobre su base.` : `El micrófono queda fuera del cuerpo (entre ${fum(g.mic.z1-v.Hp)} y ${fum(g.mic.z2-v.Hp)} sobre su base; el cuerpo mide ${fum(v.Hk)}). Baja Z₀, achica la fuente o acuéstala.`]);
   const act = g.comps.filter(c=>!c.off);
   if(act.length){ const last=act[act.length-1], free=g.top - v.e - last.z2;
     ck.push([free>=0?'ok':'bad', free>=0? `Pila de componentes: quedan ${fum(free)} libres hasta la punta interior del bulbo.` : `La pila de componentes sobrepasa la punta interior por ${fum(-free)}.`]);
     const bad=act.filter(c=>!c.fits); if(bad.length) ck.push(['bad', `No caben: ${bad.map(c=>c.c.n).join(', ')}. Prueba cambiar la posición (de pie / acostado) o mover Z₀.`]); }
+  const S = stand(v,g);
+  if(!S.reach) ck.push(['bad',`Los brazos no alcanzan el soquete: entre el poste y el soquete hay ${fum(S.d)}, y con A1 ${fum(v.A1)} y A2 ${fum(v.A2)} el rango posible es ${fum(Math.abs(v.A1-v.A2))} – ${fum(v.A1+v.A2)}.`]);
+  else if(S.clear < 2) ck.push(['warn',`El brazo superior pasa a ${fum(Math.max(S.clear,0))} de la ampolleta. Alarga A1 o acorta A2.`]);
+  if(v.Px + v.Ad/2 + 4 > v.Bd/2 - 4) ck.push(['bad',`El poste queda fuera de la base: acerca el poste o agranda el Ø de la base.`]);
+  const big = [['Base',v.Bd],['Brazo inferior',v.A1+2*S.re],['Brazo superior',v.A2+2*S.re]].filter(x=>x[1]>220);
+  if(big.length) ck.push(['warn',`${big.map(x=>x[0]+' '+fum(x[1])).join(', ')}: más de 220 mm, revisa que quepa en la cama de tu impresora.`]);
+  ck.push(['ok',`Lámpara completa: ${fum(Math.max(S.top, S.J2[1]+S.re))} de alto sobre la mesa.`]);
   $('checks').innerHTML = ck.map(c=>`<li class="${c[0]}">${esc(c[1])}</li>`).join('');
 }
 
@@ -550,9 +701,272 @@ function copy(){ const t=summary(), fb=$('fb');
   const fallback=()=>{ fb.innerHTML='<textarea class="fallback" id="fbt" readonly></textarea>'; const a=$('fbt'); a.value=t; a.focus(); a.select(); $('toast').textContent='Selecciona y copia el texto'; };
   try{ navigator.clipboard.writeText(t).then(()=>{ $('toast').textContent='Copiado. Pégalo en el chat.'; fb.innerHTML=''; }, fallback); }catch(e){ fallback(); } }
 
+/* ---------- soporte: articulaciones en el plano XZ (mm, z desde la mesa, eje de la ampolleta en x = 0) ---------- */
+function stand(v,g){
+  const s = v.Ad/2 + 0.25, re = v.Ad/2 + 3;            // s: desfase de cada pieza respecto al plano medio (uniones traslapadas)
+  // la ampolleta cuelga invertida: la cara del acople queda arriba, en zL, y la punta del domo abajo, a Hl sobre la base
+  const zL = v.Bh + v.Hl + g.top, flip = M=>M.rotate([0,180,0]).translate([0,0,zL]);
+  const sq = {Tp:Math.max(5, v.Hm+1.5), Hch:14, Tt:3};      // soquete: plato pogo (cara en zL, mirando hacia abajo), cámara de cables, tapa
+  const J1 = [v.Px, v.Bh + v.Ph], J3 = [v.Ds/2 + re + 2, zL + (sq.Tp+sq.Hch)/2];
+  const dx = J3[0]-J1[0], dz = J3[1]-J1[1], d = Math.hypot(dx,dz), L1 = v.A1, L2 = v.A2;
+  const reach = d > 0 && d <= L1+L2 && d >= Math.abs(L1-L2);
+  let J2;
+  if(reach){ const a=(L1*L1-L2*L2+d*d)/(2*d), h=Math.sqrt(Math.max(L1*L1-a*a,0)), mx=J1[0]+a*dx/d, mz=J1[1]+a*dz/d;
+    const c1=[mx+h*dz/d, mz-h*dx/d], c2=[mx-h*dz/d, mz+h*dx/d]; J2 = c1[0]>c2[0]? c1 : c2; }   // codo hacia afuera
+  else { const u = L1/(L1+L2||1); J2 = [J1[0]+dx*u, J1[1]+dz*u]; }                              // fuera de alcance: se dibuja estirado
+  // holgura entre el brazo superior y la ampolleta
+  let clear = Infinity;
+  for(let i=0;i<=80;i++){ const t=i/80, x=J2[0]+(J3[0]-J2[0])*t, z=J2[1]+(J3[1]-J2[1])*t, zl=zL-z;
+    if(zl>v.Hp && zl<g.top) clear = Math.min(clear, Math.hypot(x,s) - g.rOut(zl) - v.Ad/2); }
+  const swp = [-0.15*v.Bd, -0.28*v.Bd];                 // interruptor: adelante a la izquierda, como en la foto
+  return {s, re, zL, flip, sq, J1, J2, J3, d, reach, clear, swp, top: zL + sq.Tp + sq.Hch + sq.Tt};
+}
+
+/* ---------- sólidos imprimibles (manifold-3d). Cada pieza: world = sólidos ensamblados, print = orientada para la cama ---------- */
+function buildParts(W, v, g, S){
+  const {Manifold:M, CrossSection:CS} = W;
+  const rev = (pts,n=128)=>M.revolve(CS.ofPolygons([pts.map(p=>[Math.max(p[0],0), p[1]]).filter((p,i,a)=>{ const q=a[(i+a.length-1)%a.length]; return Math.hypot(p[0]-q[0],p[1]-q[1])>1e-6; })], 'NonZero'), n);
+  const cyl = (h,r,n=64)=>M.cylinder(h,r,r,n);
+  const cylY = (h,r,n=64)=>M.cylinder(h,r,r,n,true).rotate([90,0,0]);      // centrado, eje Y
+  const U = a=>M.union(a);
+  const s = S.s, re = S.re, hole = (v.Bt+0.3)/2, P = [];
+  const add = (k,n,grp,o)=>P.push(Object.assign({k,n,grp,qty:1,print:null,exp:[0,0,0]}, o));
+  const bolt = J=>cylY(80, hole, 32).translate([J[0],0,J[1]]);
+
+  /* ampolleta-cerebro (perfiles con z desde la cara del acople; S.flip la cuelga invertida bajo el soquete) */
+  const rp=v.Dp/2, ru=v.Du/2, Fp=g.Fp, Hp=v.Hp, cut=true;
+  const polar = (n,a0,r)=>Array.from({length:n},(_,i)=>{ const a=(a0+i*360/n)*Math.PI/180; return [r*Math.cos(a), r*Math.sin(a)]; });
+  const pads = polar(6, 30, v.Pc/2), mags = polar(6, 0, v.Pm/2);     // contactos a 30° + k·60°, imanes intercalados; KEY hacia −Y
+  const hw = (k,n,grp,list,color,exp)=>add(k,n,grp,{world:list, exp, color, metal:true, cut});
+  const domo = rev([...g.domeOut, ...g.domeIn.slice().reverse()]);
+  add('domo','Domo (difusor)','Ampolleta', {mat:'PETG/PLA blanco natural · borde abajo', world:[S.flip(domo)], print:domo, exp:[0,0,-85], color:0xf4f1ea, glass:true, cut});
+  if(v.Hs > 0){
+    const zm=(g.Zj+g.Zr)/2, rc=Math.max(Math.min(v.Oc/2, v.Hs/2-1), 0.5);
+    let anillo = rev([...g.ringOut, ...g.ringIn.slice().reverse()]);
+    if(v.Oc > 0) anillo = anillo.subtract(cyl(ru+2, rc, 32).rotate([90,0,0]).translate([0,0,zm]));                        // ventana de la cámara (−Y)
+    for(const a of [45,135,225,315]) anillo = anillo.subtract(cyl(ru+2, 0.6, 12).rotate([90,0,0]).rotate([0,0,a+90]).translate([0,0,zm]));   // micrófonos
+    add('anillo','Anillo sensorial','Ampolleta', {mat:'PETG ahumado translúcido · de pie', world:[S.flip(anillo)], print:anillo, exp:[0,0,-55], color:0x4a4033, glass:true, cut});
+    if(v.Oc > 0) hw('camara','Cámara','Ampolleta', [S.flip(cyl(2.3, rc-0.3, 24).rotate([90,0,0]).translate([0,-(ru-2.5),zm]))], 0x0b1520, [0,0,-55]);
+  }
+  let cuerpo = rev([...g.shellOut, ...g.shellIn.slice().reverse(), [0,Fp], [0,0]]);
+  const z1=Hp+2, z2=g.Zj-2, fins=[];
+  if(z2 > z1+4) for(let i=0;i<24;i++){ const a=i*15, d=((a-270)%360+360)%360;
+    if(g.mic && g.micInBody && v.Om>0 && (d<12 || d>348)) continue;            // deja libre el agujero del micrófono
+    const r1=g.rOut(z1), r2=g.rOut(z2), t=0.8;
+    fins.push(M.hull([[r1-1,-t,z1],[r1-1,t,z1],[r1+2.5,-t,z1],[r1+2.5,t,z1],[r2-1,-t,z2],[r2-1,t,z2],[r2+1,-t,z2],[r2+1,t,z2]]).rotate([0,0,a])); }
+  cuerpo = U([cuerpo, ...fins, M.cube([3, 2, Hp+1]).translate([-1.5, -(rp+1.5), 0])]);                 // aletas del disipador + nervio KEY
+  for(const [x,y] of mags) cuerpo = cuerpo.subtract(cyl(v.Hm+1.1, v.Dm/2+0.1, 32).translate([x,y,-1]));   // imanes al ras de la cara
+  for(const [x,y] of pads) cuerpo = cuerpo.subtract(cyl(Fp+2, 1.55, 24).translate([x,y,-1]));           // contactos de latón Ø3
+  if(g.mic && g.micInBody && v.Om>0) cuerpo = cuerpo.subtract(cyl(ru+4, v.Om/2, 32).rotate([90,0,0]).translate([0,0,g.micZ]));
+  add('cuerpo','Cuerpo + acople macho','Ampolleta', {mat:'PETG-CF o PLA negro · cara del acople abajo', world:[S.flip(cuerpo)], print:cuerpo, exp:[0,0,-30], color:0x22262b, cut});
+  hw('pads','Contactos del acople','Ampolleta', pads.map(([x,y])=>S.flip(cyl(Fp+0.2, 1.5, 24).translate([x,y,-0.2]))), 0xd4a63a, [0,0,-30]);
+  hw('imanesA','Imanes del acople','Ampolleta', mags.map(([x,y])=>S.flip(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-30]);
+
+  /* soquete SHU (hembra): cara pogo en zL mirando hacia abajo, copa debajo, cámara de cables y tapa arriba */
+  const sq=S.sq, Rs=v.Ds/2, rcup=rp+0.3, rch=rp-3, Hs2=sq.Tp+sq.Hch, J3x=S.J3[0];
+  let soq = U([cyl(v.Cd+Hs2, Rs, 128).translate([0,0,-v.Cd]),
+               M.cube([J3x, v.Ad, Hs2]).translate([0, s-v.Ad/2, 0]),
+               cylY(v.Ad, Math.min(re, Hs2/2)).translate([J3x, s, Hs2/2])])
+    .subtract(cyl(v.Cd+1, rcup, 128).translate([0,0,-v.Cd-1]))                                  // copa del acople
+    .subtract(M.cube([3.6, 3.4, v.Cd+1]).translate([-1.8, -(rcup+2.2), -v.Cd-1]))             // ranura KEY
+    .subtract(cyl(sq.Hch+1, rch, 96).translate([0,0,sq.Tp]))                                   // cámara de cables
+    .subtract(cylY(30, hole, 32).translate([J3x,0,Hs2/2]));
+  for(const [x,y] of mags) soq = soq.subtract(cyl(v.Hm+1, v.Dm/2+0.1, 32).translate([x,y,-1]));
+  for(const [x,y] of pads) soq = soq.subtract(cyl(sq.Tp+2, 0.7, 16).translate([x,y,-1]));          // pogo pins P75-E2 (Ø1,3) a presión + CA
+  const ins = polar(3, 90, (Rs+rch)/2);
+  for(const [x,y] of ins) soq = soq.subtract(cyl(6, 2.1, 24).translate([x,y,Hs2-5]));             // insertos de calor M3 de la tapa
+  add('soquete','Soquete SHU (hembra)','Soporte', {mat:'PETG-CF · cara pogo arriba', world:[soq.translate([0,0,S.zL])], print:soq.rotate([180,0,0]), exp:[0,0,0], color:0x2b2f34, metal:true, cut});
+  let tapa = U([cyl(sq.Tt, Rs, 128), cyl(2, rch-0.25, 96).translate([0,0,-2])]).subtract(cyl(sq.Tt+4, 4, 32).translate([0,0,-3]));   // paso de cable Ø8
+  for(const [x,y] of ins) tapa = tapa.subtract(cyl(sq.Tt+4, 1.7, 16).translate([x,y,-3]));
+  add('tapa','Tapa del soquete','Soporte', {mat:'PETG-CF o TPU 95A · plana abajo', world:[tapa.translate([0,0,S.zL+Hs2])], print:tapa.rotate([180,0,0]), exp:[0,0,28], color:0x2b2f34, metal:true, cut});
+  hw('pogo','Pogo pins','Soporte', pads.map(([x,y])=>cyl(sq.Tp+0.8, 0.65, 12).translate([x,y,S.zL-0.8])), 0xd4a63a, [0,0,0]);
+  hw('imanesS','Imanes del soquete','Soporte', mags.map(([x,y])=>cyl(v.Hm, v.Dm/2, 32).translate([x,y,S.zL+0.05])), 0xb8bec4, [0,0,0]);
+
+  /* soporte */
+  const R = v.Bd/2, Pd = v.Ad;
+  let base = U([cyl(v.Bh-2, R, 192), M.cylinder(2, R, R-2, 192).translate([0,0,v.Bh-2])])
+    .subtract(cyl(v.Bh-2, R-4, 192).translate([0,0,-1]))                        // hueco inferior: cables y lastre
+    .add(cyl(v.Bh, Pd/2+4).translate([v.Px,0,0]))                               // refuerzo del poste
+    .subtract(cyl(v.Bh+2, Pd/2+0.15).translate([v.Px,0,-1]))
+    .subtract(cyl(v.Bh+2, v.Sw/2, 32).translate([S.swp[0],S.swp[1],-1]))
+    .subtract(M.cylinder(16,3,3,32).rotate([0,90,0]).rotate([0,0,50]).translate([(R-10)*Math.cos(50*Math.PI/180),(R-10)*Math.sin(50*Math.PI/180),4]));
+  add('base','Base','Soporte', {mat:'PLA/PETG · imprimir boca abajo', world:[base], print:base.rotate([180,0,0]), exp:[0,0,-80], color:0x9aa1a7, metal:true});
+
+  const eye = (J,y,r=re)=>cylY(v.Ad, r).translate([J[0], y, J[1]]);
+  const poste = U([cyl(v.Bh+v.Ph, Pd/2).translate([v.Px,0,0]), eye(S.J1,-s)]).subtract(bolt(S.J1));
+  add('poste','Poste','Soporte', {mat:'PLA/PETG · de pie', world:[poste], print:poste, exp:[40,0,-30], color:0x5b6268, metal:true});
+
+  const arm = (A,B,ys,k,n,exp)=>{
+    const L = Math.hypot(B[0]-A[0], B[1]-A[1]), th = Math.atan2(B[1]-A[1], B[0]-A[0])*180/Math.PI, rOct = (v.Ad/2)/Math.cos(Math.PI/8);
+    const loc = U([M.cylinder(L, rOct, rOct, 8).rotate([0,90,0]).rotate([22.5,0,0]), cylY(v.Ad, re), cylY(v.Ad, re).translate([L,0,0])])
+      .subtract(cylY(30, hole, 32)).subtract(cylY(30, hole, 32).translate([L,0,0]));
+    add(k, n, 'Soporte', {mat:'PLA/PETG · acostado', world:[loc.translate([0,ys,0]).rotate([0,-th,0]).translate([A[0],0,A[1]])], print:loc.rotate([90,0,0]), exp, color:0x3d4349, metal:true, len:L+2*re});
+  };
+  arm(S.J1, S.J2,  s, 'brazo1', 'Brazo inferior', [38,0,0]);
+  arm(S.J2, S.J3, -s, 'brazo2', 'Brazo superior', [20,-30,25]);
+
+  let knob = cyl(10, 9, 48);
+  for(let i=0;i<18;i++){ const a=i/18*2*Math.PI; knob = knob.subtract(cyl(12, 1.1, 16).translate([9.4*Math.cos(a), 9.4*Math.sin(a), -1])); }
+  knob = knob.subtract(M.cylinder(4.3, 4.75, 4.75, 6).translate([0,0,5.8])).subtract(cyl(12, 2.65, 32).translate([0,0,-1]));   // tuerca M5 (8 mm entre caras)
+  const ky = -(s + v.Ad/2);
+  add('perilla','Perilla de articulación','Soporte', {qty:3, mat:'PLA/PETG · tuerca M5 a presión', print:knob,
+    world:[S.J1,S.J2,S.J3].map(J=>knob.rotate([90,0,0]).translate([J[0], ky, J[1]])), exp:[0,-26,0], color:0x2a2e33, metal:true});
+  return P;
+}
+
+/* ---------- prototipo 3D: three.js muestra lo que arma manifold-3d (mm, Z hacia arriba) ---------- */
+const V3 = {view:'ens', t:0, meshes:[], trash:[], stl:{}};
+const render3d = ()=>{ if(V3.r) V3.r.render(V3.scene, V3.cam); };
+// manifold-3d vive en WebAssembly: cada sólido intermedio se libera con delete() al terminar de armar
+function trackGC(W){
+  for(const cls of [W.Manifold, W.CrossSection]){
+    const wrap = f=>function(...a){ const r=f.apply(this,a); if(r instanceof W.Manifold || r instanceof W.CrossSection) V3.trash.push(r); return r; };
+    for(let pr=cls.prototype; pr && pr!==Object.prototype; pr=Object.getPrototypeOf(pr))
+      for(const k of Object.getOwnPropertyNames(pr)) if(k!=='constructor' && k[0]!=='_' && !/delete|clone/i.test(k) && typeof pr[k]==='function') pr[k]=wrap(pr[k]);
+    for(const k of Object.getOwnPropertyNames(cls)) if(typeof cls[k]==='function') cls[k]=wrap(cls[k]);
+  }
+}
+const freeGC = ()=>V3.trash.splice(0).forEach(m=>{ try{ m.delete(); }catch(e){} });
+async function init3d(){
+  if(V3.started) return; V3.started = true;
+  const msg = t=>{ $('v3msg').textContent = t; };
+  if(!window.THREE || !THREE.OrbitControls){ msg('No se pudo cargar three.js. Revisa la conexión a internet y recarga.'); return; }
+  try{ const mod = await import('https://cdn.jsdelivr.net/npm/manifold-3d@3.2.1/manifold.js'); V3.W = await mod.default(); V3.W.setup(); trackGC(V3.W); }
+  catch(e){ console.error(e); msg('No se pudo cargar el motor de sólidos (manifold-3d). Revisa la conexión a internet y recarga.'); return; }
+  const box = $('v3d'); $('v3msg').remove();
+  let r;
+  try{ r = new THREE.WebGLRenderer({antialias:true, alpha:true}); }
+  catch(e){ box.innerHTML = '<p class="hint">Este navegador no tiene WebGL activado, así que no puedo mostrar el modelo 3D. Prueba con otro navegador o activa la aceleración por hardware.</p>'; return; }
+  V3.r = r;
+  r.setPixelRatio(Math.min(devicePixelRatio,2)); r.localClippingEnabled = true; box.appendChild(r.domElement);
+  V3.scene = new THREE.Scene();
+  V3.cam = new THREE.PerspectiveCamera(32, 1, 1, 8000); V3.cam.up.set(0,0,1);
+  V3.scene.add(new THREE.HemisphereLight(0xffffff, 0x50555a, 0.8));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.8); dl.position.set(-150,-300,400); V3.scene.add(dl);
+  const dl2 = new THREE.DirectionalLight(0xffffff, 0.3); dl2.position.set(300,200,100); V3.scene.add(dl2);
+  V3.ctl = new THREE.OrbitControls(V3.cam, r.domElement); V3.ctl.addEventListener('change', render3d);
+  V3.clip = new THREE.Plane(new THREE.Vector3(0,1,0), 0);   // corte: quita la mitad delantera (y < 0)
+  new ResizeObserver(()=>{ const w=box.clientWidth, h=box.clientHeight; if(!w||!h) return; r.setSize(w,h); V3.cam.aspect=w/h; V3.cam.updateProjectionMatrix(); render3d(); }).observe(box);
+  document.querySelectorAll('[data-v3]').forEach(b=>b.addEventListener('click', ()=>setView(b.dataset.v3)));
+  ['v3amp','v3sop','v3ele','v3cut'].forEach(id=>$(id).addEventListener('change', applyVis));
+  $('v3fit').addEventListener('click', frame3d);
+  $('v3parts').addEventListener('click', e=>{ const b=e.target.closest('[data-stl]'); if(b) exportSTL(b.dataset.stl); });
+  if(V3.args) build3d(...V3.args);
+}
+function queue3d(v,g){ V3.args=[v,g]; if(!V3.W) return; clearTimeout(V3.tm); V3.tm = setTimeout(()=>build3d(v,g), 120); }
+function toGeo(M){
+  const m=M.getMesh(), P=m.vertProperties, n=m.numProp, T=m.triVerts, pos=new Float32Array(T.length*3);
+  for(let i=0;i<T.length;i++){ const b=T[i]*n; pos[i*3]=P[b]; pos[i*3+1]=P[b+1]; pos[i*3+2]=P[b+2]; }
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos,3)); geo.computeVertexNormals(); return geo;
+}
+// triángulos de la pieza orientada para imprimir: centrada en XY y apoyada en z = 0
+function printData(M){
+  const m=M.getMesh(), P=m.vertProperties, n=m.numProp, T=m.triVerts, b=M.boundingBox(), pos=new Float32Array(T.length*3);
+  const off=[-(b.min[0]+b.max[0])/2, -(b.min[1]+b.max[1])/2, -b.min[2]];
+  for(let i=0;i<T.length;i++) for(let j=0;j<3;j++) pos[i*3+j]=P[T[i]*n+j]+off[j];
+  return {pos, size:[0,1,2].map(i=>b.max[i]-b.min[i]), vol:M.volume()};
+}
+function build3d(v,g){
+  if(!V3.r) return;
+  const S = stand(v,g); let parts;
+  try{ parts = buildParts(V3.W, v, g, S); }
+  catch(e){ console.error(e); freeGC(); $('v3parts').innerHTML = `<p class="hint" style="padding:12px 14px;color:var(--bad)">No pude generar los sólidos con estas medidas: ${esc(e.message||e)}</p>`; return; }
+  for(const m of V3.meshes){ V3.scene.remove(m); m.geometry.dispose(); m.material.dispose(); }
+  V3.meshes = []; V3.stl = {};
+  const addMesh = (geo, color, ud, o={})=>{
+    const mat = new THREE.MeshStandardMaterial({color, roughness:o.metal? .42 : .7, metalness:o.metal? .3 : 0, side:THREE.DoubleSide,
+      transparent:!!o.glass, opacity:o.glass? .82 : 1, emissive:o.bad? 0x661111 : 0x000000});
+    const mesh = new THREE.Mesh(geo, mat); mesh.userData = ud; V3.scene.add(mesh); V3.meshes.push(mesh); };
+  for(const p of parts){
+    for(const w of p.world) addMesh(toGeo(w), p.color, {grp:p.grp, exp:p.exp, cut:!!p.cut}, p);
+    if(p.print) V3.stl[p.k] = printData(p.print);
+  }
+  freeGC();
+  const cexp = parts.find(p=>p.k==='cuerpo').exp, css = k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  for(const c of g.comps){ if(c.off) continue;
+    const geo = new THREE.BoxGeometry(c.across, c.depth, c.z2-c.z1); geo.translate(0, 0, S.zL-(c.z1+c.z2)/2);
+    addMesh(geo, new THREE.Color(css('--c-'+c.c.k)||'#ccc'), {grp:'Electrónica', exp:cexp, cut:true}, {bad:!c.fits}); }
+  renderParts(parts, v, S);
+  applyVis();
+  if(!V3.framed){ frame3d(); V3.framed = true; }
+}
+function applyVis(){
+  if(!V3.r) return;
+  const on = {Ampolleta:$('v3amp').checked, Otros:$('v3amp').checked, Soporte:$('v3sop').checked, 'Electrónica':$('v3ele').checked}, cut=$('v3cut').checked;
+  for(const m of V3.meshes){ const u=m.userData;
+    m.visible = on[u.grp];
+    m.material.clippingPlanes = cut && u.cut ? [V3.clip] : []; m.material.needsUpdate = true;
+    m.position.set(u.exp[0]*V3.t, u.exp[1]*V3.t, u.exp[2]*V3.t); }
+  render3d();
+}
+function setView(k){
+  V3.view = k;
+  document.querySelectorAll('[data-v3]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.v3===k)));
+  const goal = k==='sep'? 1 : 0;
+  const tick = ()=>{ V3.t += (goal-V3.t)*0.16; if(Math.abs(goal-V3.t)<0.003) V3.t=goal; applyVis(); if(V3.t!==goal) requestAnimationFrame(tick); };
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ V3.t=goal; applyVis(); } else tick();
+}
+function frame3d(){
+  if(!V3.r) return;
+  const box = new THREE.Box3(); V3.meshes.forEach(m=>{ if(m.visible) box.expandByObject(m); });
+  if(box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()).length();
+  // distancia según el lado que limita: en pantallas verticales manda el ancho del visor
+  const bx=$('v3d'), aspect = (bx.clientWidth||1)/(bx.clientHeight||1), half = Math.tan(V3.cam.fov*Math.PI/360);
+  V3.cam.position.copy(c).add(new THREE.Vector3(0.5,-1,0.28).normalize().multiplyScalar(sz*0.45/half/Math.min(1,aspect)));
+  V3.ctl.target.copy(c); V3.ctl.update(); render3d();
+}
+function renderParts(parts, v, S){
+  const row = p=>{ const d=V3.stl[p.k], big=d && Math.max(d.size[0],d.size[1])>220;
+    return `<tr><td><i class="dot" style="background:#${p.color.toString(16).padStart(6,'0')}"></i>${esc(p.n)}</td><td class="num" data-l="Cant.">${p.qty}</td>
+      <td class="num" data-l="Cama">${d? d.size.map(x=>f(x)).join(' × ') : '—'}${big?' <span class="chip bad">&gt; 220</span>':''}</td>
+      <td class="num" data-l="cm³">${d? f(d.vol/1000*p.qty) : '—'}</td><td>${esc(p.mat)}</td>
+      <td>${d? `<button type="button" data-stl="${p.k}">STL</button>` : ''}</td></tr>`; };
+  const grp = n=>`<tr class="gh"><td colspan="6">${n}</td></tr>` + parts.filter(p=>p.grp===n && p.print).map(row).join('');
+  const bl = Math.ceil((2*v.Ad + 10)/5)*5;
+  $('v3parts').innerHTML = `<h2>Piezas para imprimir<small>mm · Z hacia arriba</small></h2>
+    <div class="ptwrap"><table class="ptab"><thead><tr><th>Pieza</th><th>Cant.</th><th>Tamaño en la cama</th><th>cm³</th><th>Material · orientación</th><th></th></tr></thead>
+    <tbody>${grp('Ampolleta')}${grp('Soporte')}</tbody></table></div>
+    <div class="hw"><b>No se imprime</b><ul>
+      <li>12 imanes de neodimio N52 Ø ${f(v.Dm)} × ${f(v.Hm)} mm: 6 en el acople y 6 en el soquete, pegados con polaridad alternada (N-S-N…) y enfrentados en polaridad opuesta</li>
+      <li>6 pogo pins P75-E2 (Ø1,3 × 16,5 mm) en el soquete y 6 contactos de latón Ø3 en el acople (remaches o PCB circular con pads). Pinout: P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL</li>
+      <li>3 insertos de calor M3 × 4 y 3 tornillos M3 × 8 para la tapa del soquete</li>
+      <li>3 pernos M5 × ${bl} con su tuerca (va a presión en la perilla) y 6 golillas</li>
+      <li>Interruptor de palanca de Ø ${f(v.Sw)} mm en la base y cable de 4 hilos (2 × 0,5 mm² para 5 V/GND + 2 × 0,22 mm² de datos) por el brazo hasta la tapa del soquete</li>
+      <li>Lastre opcional dentro de la base (golillas o arena), para que no se vuelque con el brazo extendido</li></ul></div>`;
+}
+function exportSTL(k){
+  const d = V3.stl[k]; if(!d) return;
+  const pos = d.pos, nt = pos.length/9, dv = new DataView(new ArrayBuffer(84 + nt*50)); dv.setUint32(80, nt, true);
+  let o = 84;
+  for(let t=0;t<nt;t++){ const p=i=>pos[t*9+i];
+    const u=[p(3)-p(0),p(4)-p(1),p(5)-p(2)], w=[p(6)-p(0),p(7)-p(1),p(8)-p(2)];
+    const n=[u[1]*w[2]-u[2]*w[1], u[2]*w[0]-u[0]*w[2], u[0]*w[1]-u[1]*w[0]], l=Math.hypot(...n)||1;
+    n.forEach((x,i)=>dv.setFloat32(o+i*4, x/l, true)); o+=12;
+    for(let i=0;i<9;i++){ dv.setFloat32(o, p(i), true); o+=4; }
+    o+=2; }
+  const url = URL.createObjectURL(new Blob([dv.buffer], {type:'model/stl'})), a = document.createElement('a');
+  a.href=url; a.download=`ampolleta-${k}.stl`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+// en escritorio el formulario siempre está a la vista: «Medidas» solo existe como pestaña en pantallas angostas
+const WIDE = matchMedia('(min-width:1100px)'), NARROW = matchMedia('(max-width:700px)');
+function setTab(t){
+  if(!['med','2d','3d'].includes(t) || (t==='med' && WIDE.matches)) t = '2d';
+  const changed = meta.tab !== t;
+  meta.tab = t; save(); $('app').dataset.tab = t;
+  if(changed && !WIDE.matches){ const top = $('app').getBoundingClientRect().top + scrollY; if(scrollY > top) scrollTo({top}); }
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.tab===t)));
+  $('pane-2d').hidden = t!=='2d'; $('pane-3d').hidden = t!=='3d';
+  if(t==='3d') init3d();
+}
+
 $('sheet').addEventListener('click', pickZone);
 $('sheet').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pickZone(e); } });
 buildForm(); update();
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click', ()=>setTab(b.dataset.tab)));
+setTab(meta.tab);
+WIDE.addEventListener('change', ()=>setTab(meta.tab));
+NARROW.addEventListener('change', update);   // la lámina cambia de diagramación
 </script>
 
 </body></html>
