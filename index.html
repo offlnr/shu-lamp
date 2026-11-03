@@ -252,7 +252,7 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
         <div class="legend">
           <span><i class="sw"></i>Cota medida</span>
           <span><i class="sw ref"></i>≈ Cota de referencia (sin medir)</span>
-          <span>El soquete se dibuja separado: es la hembra del acople magnético y va en el brazo</span>
+          <span>El adaptador SHU se dibuja separado: copa del acople hacia la ampolleta y rosca E27 hacia el portalámparas</span>
         </div>
       </div>
       <div class="pane" id="pane-3d" role="tabpanel" hidden>
@@ -260,6 +260,7 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
           <div class="unit" role="group" aria-label="Vista del modelo"><button type="button" data-v3="ens" aria-pressed="true">Ensamblado</button><button type="button" data-v3="sep" aria-pressed="false">Separado</button></div>
           <div class="v3ctl">
             <label><input type="checkbox" id="v3amp" checked> Ampolleta</label>
+            <label><input type="checkbox" id="v3ada" checked> Adaptador</label>
             <label><input type="checkbox" id="v3sop" checked> Soporte</label>
             <label><input type="checkbox" id="v3ele" checked> Electrónica</label>
             <label><input type="checkbox" id="v3cut"> Corte</label>
@@ -267,7 +268,7 @@ textarea.fallback{width:100%;min-height:120px;font:12px var(--f-mono);background
           </div>
         </div>
         <div class="v3d" id="v3d"><p class="hint" id="v3msg">Cargando modelo 3D…</p></div>
-        <p class="hint">Arrastra para girar · rueda o pellizco para zoom · clic derecho para desplazar. El corte abre la ampolleta y el soquete por la mitad.</p>
+        <p class="hint">Arrastra para girar · rueda o pellizco para zoom · clic derecho para desplazar. El corte abre la ampolleta y el adaptador por la mitad.</p>
         <div class="group" id="v3parts"></div>
       </div>
     </section>
@@ -295,15 +296,20 @@ const GROUPS = [
     {k:'e',  n:'Espesor de pared del cuerpo', ref:1.5, tip:'Mordazas exteriores sobre el borde de la pieza abierta.'},
     {k:'Om', n:'Ø agujero del micrófono', ref:3, tip:'Va en la pared del cuerpo, a la altura del micrófono. Si aún no lo perforas, anota el diámetro que planeas.'},
   ]},
-  {id:'acople', title:'Acople magnético', note:'Reemplaza la rosca E27. El macho va integrado al cuerpo; la hembra es el soquete SHU (pieza 001) en la punta del brazo. 6 contactos en PCD Ø20, 6 imanes N52 por lado con polaridad alternada y nervio KEY: calza en una sola posición.', fields:[
+  {id:'acople', title:'Acople magnético', note:'El macho va integrado al cuerpo de la ampolleta; la hembra está en el adaptador SHU. 6 contactos en PCD Ø20, 6 imanes N52 por lado con polaridad alternada y nervio KEY: calza en una sola posición.', fields:[
     {k:'Hp', n:'Alto del acople macho', ref:12, tip:'Cuello bajo el cuerpo. Su cara lleva los 6 contactos y los 6 imanes.'},
-    {k:'Dp', n:'Diámetro del acople macho', ref:40, tip:'Entra en la copa del soquete con 0,3 mm de holgura por lado.'},
+    {k:'Dp', n:'Diámetro del acople macho', ref:40, tip:'Entra en la copa del adaptador con 0,3 mm de holgura por lado.'},
     {k:'Pc', n:'Círculo de contactos (PCD)', ref:20, tip:'Planimetría SHU pieza 001: 6 pogo pins P75-E2 en PCD Ø20 mm. P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL.'},
     {k:'Dm', n:'Diámetro de los imanes', ref:6, tip:'Imanes de neodimio N52 en disco, intercalados con los contactos.'},
     {k:'Hm', n:'Alto de los imanes', ref:3, tip:'Van al ras de la cara. El piso del acople queda 1,2 mm más grueso que el imán.'},
     {k:'Pm', n:'Círculo de imanes (PCD)', ref:30, tip:'Entre los contactos y el borde del acople.'},
-    {k:'Ds', n:'Diámetro exterior del soquete', ref:52, tip:'Planimetría SHU pieza 001: Ø52 mm.'},
-    {k:'Cd', n:'Profundidad de calce en el soquete', ref:8, tip:'Cuánto del acople macho entra en la copa. La copa lo guía de lado y los imanes lo sostienen.'},
+  ]},
+  {id:'adaptador', title:'Adaptador SHU · rosca E27 → acople', note:'Pieza 001 de la planimetría: se atornilla en un portalámparas E27 como una ampolleta normal y en el otro extremo tiene la hembra del acople magnético. La rosca es solo mecánica: los 5 V y los datos llegan por un cable que pasa por su canal de Ø8.', fields:[
+    {k:'Ds', n:'Ø del agarre moleteado', ref:52, tip:'Planimetría SHU: moleteado de Ø52 para enroscarlo con una mano.'},
+    {k:'Cd', n:'Profundidad de la copa', ref:8, tip:'Cuánto del acople macho de la ampolleta entra en la copa. La copa lo guía de lado y los imanes lo sostienen.'},
+    {k:'Dc', n:'Ø exterior de la rosca E27', ref:26.4, tip:'Sobre las crestas. E27 nominal: 26,05–26,45 mm.'},
+    {k:'P',  n:'Paso de rosca', ref:3.63, tip:'E27 nominal: 3,629 mm.'},
+    {k:'Lr', n:'Largo roscado', ref:24, tip:'Lo que entra en el portalámparas. Uno E27 estándar recibe unos 22–25 mm; los 60 mm de la planimetría v1.0 no entrarían.'},
   ]},
   {id:'montaje', title:'Montaje interior', fields:[
     {k:'z0',  n:'Altura de inicio del montaje (Z₀)', ref:0, tip:'Medida desde la base del cuerpo hasta donde se apoya el primer componente.'},
@@ -405,16 +411,27 @@ function geom(v){
   return g;
 }
 
+/* ---------- adaptador SHU (pieza 001) y portalámparas: z desde la cara pogo hacia la rosca ---------- */
+function adapter(v){
+  const a = {rcup: v.Dp/2 + 0.3, Tp: Math.max(5, v.Hm+1.5), Rb: v.Ds/2 - 2, Rk: v.Ds/2, k0: 4, k1: 16, zb: 30, zt: 36, rch: v.Dp/2 - 6, rcab: 4};
+  a.ro = v.Dc/2; a.rr = a.ro - 0.9;                 // crestas y valles de la rosca E27
+  a.z1 = a.zt + v.Lr; a.top = a.z1 + 3;             // fin de la rosca · punta
+  a.rs = a.rcup - 3.8;                              // tornillos M3 del plato porta-pogo
+  a.hz0 = a.zt + 2; a.hz1 = a.z1 + 5.5;             // portalámparas: boca y techo interior (quedan 2 mm de rosca a la vista)
+  a.Rh = a.ro + 6.5; a.htop = a.hz1 + 4;
+  return a;
+}
+
 /* ---------- dibujo ---------- */
 function draw(v, m){
   const narrow = NARROW.matches;                                   // móvil: frontal, corte e inferior una bajo otra
   const g = geom(v), R=g.R, fs = narrow? 4.2 : 3.3;
-  const sq = {Tp:Math.max(5, v.Hm+1.5), Hch:14, Tt:3}, Hsq = sq.Tp+sq.Hch+sq.Tt;   // soquete: plato pogo, cámara de cables, tapa
-  const X = v.Cd + 12;                                             // X: separación del soquete en la vista explosionada
+  const A = adapter(v), Ha = A.top;                                // adaptador SHU: largo bajo la cara pogo
+  const X = v.Cd + 12;                                             // X: separación del adaptador en la vista explosionada
   const ox1 = 14 + R + 26, oy = 14 + 22 + g.top;
-  const row2 = oy + X + Hsq + 7*4 + 18;                            // título de la vista frontal
+  const row2 = oy + X + Ha + 7*5 + 18;                            // título de la vista frontal
   const ox2 = narrow? ox1 : ox1 + R + 22 + 24 + R, oy2 = narrow? row2 + 36 + g.top : oy;
-  const row2c = narrow? oy2 + X + Hsq + 18 : row2;                 // título del corte
+  const row2c = narrow? oy2 + X + Ha + 18 : row2;                 // título del corte
   const W = narrow? ox1 + R + 72 : ox2 + R + 66;
   const cx = ox1, cy = row2c + 10 + R, tbH = 70;
   const H = narrow? cy + R + 20 + tbH + 8 : cy + R + 16;
@@ -447,8 +464,8 @@ function draw(v, m){
   s += `<rect class="fs" x="0" y="0" width="${W}" height="${H}"/><rect class="frame" x="5" y="5" width="${W-10}" height="${H-10}"/>`;
 
   /* --- Vista frontal --- */
-  const rp=v.Dp/2, ru=v.Du/2, rk=v.Dk/2, Rs=v.Ds/2, rcup=rp+0.3, rch=rp-3, re=v.Ad/2+3, o=V1, oc=VC1;
-  s += `<line class="axis" x1="${o.x}" y1="${oc.y+Hsq+5}" x2="${o.x}" y2="${o.y-g.top-5}"/>`;
+  const rp=v.Dp/2, ru=v.Du/2, rk=v.Dk/2, rcup=A.rcup, o=V1, oc=VC1;
+  s += `<line class="axis" x1="${o.x}" y1="${oc.y+Ha+5}" x2="${o.x}" y2="${o.y-g.top-5}"/>`;
   const side=g.side.map(p=>P(o,p[0],p[1])).join('L'), sideL=g.side.slice().reverse().map(p=>P(o,-p[0],p[1])).join('L');
   s += `<path class="o fg"${Z('bulbo')} d="M${side}A${R} ${R} 0 0 0 ${P(o,-R,g.Zc)}L${sideL}Z"/>`;
   if(v.Hs>0){ const zm=(g.Zj+g.Zr)/2;
@@ -460,35 +477,40 @@ function draw(v, m){
   if(g.mic && g.micInBody && v.Om>0) s += `<circle class="o fs"${Z('cuerpo')} cx="${o.x}" cy="${o.y-g.micZ}" r="${v.Om/2}"/>`;
   s += `<rect class="o fm"${Z('acople')} x="${o.x-rp}" y="${o.y-v.Hp}" width="${2*rp}" height="${v.Hp}"/>`;
   s += `<rect class="o fm"${Z('acople')} x="${o.x-1.5}" y="${o.y-v.Hp}" width="3" height="${v.Hp}"/>`;   // nervio KEY, al frente
-  // soquete (pieza del brazo), separado X hacia abajo; en la lámina la ampolleta va de pie, así que el soquete mira hacia arriba
-  const zb = -(sq.Tp+sq.Hch);
-  s += `<path class="o fb"${Z('soquete')} d="M${P(oc,Rs-1,zb)}L${P(oc,Rs+2*re+2,zb)}L${P(oc,Rs+2*re+2,0)}L${P(oc,Rs-1,0)}Z"/>`;
-  s += `<circle class="hid" cx="${oc.x+Rs+re+2}" cy="${oc.y-zb/2}" r="${v.Bt/2}"/>`;
-  s += `<path class="o fb"${Z('soquete')} d="M${P(oc,-Rs,v.Cd)}L${P(oc,Rs,v.Cd)}L${P(oc,Rs,zb)}L${P(oc,-Rs,zb)}Z"/>`;
-  s += `<rect class="o fb"${Z('soquete')} x="${oc.x-Rs}" y="${oc.y-zb}" width="${2*Rs}" height="${sq.Tt}"/>`;
-  s += `<path class="hid" d="M${P(oc,-rcup,v.Cd)}L${P(oc,-rcup,0)}L${P(oc,rcup,0)}L${P(oc,rcup,v.Cd)}M${P(oc,-rch,-sq.Tp)}L${P(oc,-rch,zb)}M${P(oc,rch,-sq.Tp)}L${P(oc,rch,zb)}M${P(oc,-rch,-sq.Tp)}L${P(oc,rch,-sq.Tp)}"/>`;
-  for(const x of [-v.Pc/2*Math.cos(Math.PI/6), 0, v.Pc/2*Math.cos(Math.PI/6)]) s += `<rect class="o fm" x="${oc.x+x-0.65}" y="${oc.y-0.8}" width="1.3" height="${0.8+sq.Tp}"/>`;
+  // adaptador SHU, separado X hacia abajo: copa hacia la ampolleta y rosca E27 hacia el portalámparas (en la lámina va de pie)
+  const step = Math.max(v.P,0.8)/2, thr = [];
+  for(let z=A.zt, i=0; z<=A.z1+1e-6; z+=step, i++) thr.push([i%2? A.rr : A.ro, -z]);
+  const adOut = [[A.Rb,v.Cd],[A.Rb,-A.k0],[A.Rk,-A.k0],[A.Rk,-A.k1],[A.Rb,-A.k1],[A.Rb,-A.zb],[A.rr+1.5,-A.zt], ...thr, [A.rr,-A.z1],[A.rr-2.5,-A.top]];
+  const adIn  = [[rcup,v.Cd],[rcup,-A.Tp],[A.rch,-A.Tp],[A.rch,-A.zb],[A.rcab,-A.zb],[A.rcab,-A.top]];
+  s += `<path class="o fb"${Z('adaptador')} d="${mirror(oc,adOut)}"/>`;
+  s += `<rect class="o"${Z('adaptador')} fill="url(#hatch2)" x="${oc.x-A.Rk}" y="${oc.y+A.k0}" width="${2*A.Rk}" height="${A.k1-A.k0}"/>`;    // moleteado
+  for(let z=A.zt+2*step; z<=A.z1-1e-6; z+=2*step) s += `<line class="thin" x1="${oc.x-A.ro}" y1="${oc.y+z-step}" x2="${oc.x+A.ro}" y2="${oc.y+z}"/>`;
+  s += `<path class="hid" d="M${P(oc,-rcup,v.Cd)}L${P(oc,-rcup,-A.Tp)}L${P(oc,rcup,-A.Tp)}L${P(oc,rcup,v.Cd)}M${P(oc,-rcup,0)}L${P(oc,rcup,0)}M${P(oc,-A.rch,-A.Tp)}L${P(oc,-A.rch,-A.zb)}L${P(oc,A.rch,-A.zb)}L${P(oc,A.rch,-A.Tp)}M${P(oc,-A.rcab,-A.zb)}L${P(oc,-A.rcab,-A.top)}M${P(oc,A.rcab,-A.zb)}L${P(oc,A.rcab,-A.top)}"/>`;
+  for(const x of [-v.Pc/2*Math.cos(Math.PI/6), 0, v.Pc/2*Math.cos(Math.PI/6)]) s += `<rect class="o fm" x="${oc.x+x-0.65}" y="${oc.y-0.8}" width="1.3" height="${0.8+A.Tp}"/>`;
   s += `<line class="hid" x1="${oc.x-rcup}" y1="${oc.y-v.Cd}" x2="${o.x-rp+0.4}" y2="${o.y}"/><line class="hid" x1="${oc.x+rcup}" y1="${oc.y-v.Cd}" x2="${o.x+rp-0.4}" y2="${o.y}"/>`;
-  s += `<text class="sm" font-size="${fs*0.8}" x="${oc.x-Rs-3}" y="${oc.y+Hsq*0.55}" text-anchor="end" font-weight="600">SOQUETE SHU</text>`;
-  s += `<text class="sm" font-size="${fs*0.72}" x="${oc.x-Rs-3}" y="${oc.y+Hsq*0.55+fs*0.95}" text-anchor="end">hembra · va en el brazo</text>`;
+  const ly = oc.y + (A.zt+A.z1)/2;
+  s += `<text class="sm" font-size="${fs*0.8}" x="${oc.x-A.ro-4}" y="${ly}" text-anchor="end" font-weight="600">ADAPTADOR SHU</text>`;
+  s += `<text class="sm" font-size="${fs*0.72}" x="${oc.x-A.ro-4}" y="${ly+fs*0.95}" text-anchor="end">rosca E27 → portalámparas</text>`;
   // indicador de corte
-  s += `<line class="cut" x1="${o.x-3}" y1="${o.y-g.top-12}" x2="${o.x+3}" y2="${o.y-g.top-12}"/><line class="cut" x1="${o.x-3}" y1="${oc.y+Hsq+4}" x2="${o.x+3}" y2="${oc.y+Hsq+4}"/>`;
-  s += `<text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${o.y-g.top-10.8}">A</text><text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${oc.y+Hsq+5.2}">A</text>`;
+  s += `<line class="cut" x1="${o.x-3}" y1="${o.y-g.top-12}" x2="${o.x+3}" y2="${o.y-g.top-12}"/><line class="cut" x1="${o.x-3}" y1="${oc.y+Ha+4}" x2="${o.x+3}" y2="${oc.y+Ha+4}"/>`;
+  s += `<text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${o.y-g.top-10.8}">A</text><text class="vt" font-size="${fs}" x="${o.x+4.5}" y="${oc.y+Ha+5.2}">A</text>`;
   // cotas
   const xl = -R-16;
   dimV(o, xl, v.Hp, g.top, -rk, 0, mk('H cuerpo+anillo+domo', g.top-v.Hp, !m.Hk||!m.Hb||!m.Hs), 'l');
   dimV(o, xl, 0, v.Hp, -rp, -rp, lab('Hp','Hp'), 'l');
-  dimV(oc, -Rs-9, 0, v.Cd, -rcup, -Rs, lab('Cd','Cd'), 'l');
+  dimV(oc, -A.Rk-9, 0, v.Cd, -rcup, -A.Rb, lab('Cd','Cd'), 'l');
+  dimV(oc, A.Rk+7, -A.z1, -A.zt, A.ro, A.Rb, lab('Lr','Lr'), 'r');
   const xc = R+9;
   dimV(o, xc, v.Hp, g.Zj, rk, ru, lab('Hk','Hk'), 'r');
   if(v.Hs>0) dimV(o, xc, g.Zj, g.Zr, ru, ru, lab('Hs','Hs'), 'r');
   dimV(o, xc, g.Zr, g.top, ru, 0, lab('Hb','Hb'), 'r');
   dimH(o, g.top+7, -R, R, g.Zc, g.Zc, lab('D','Ø'));
-  const zd = -X-Hsq-11;
-  dimH(o, zd,    -Rs, Rs, zb-X-sq.Tt, zb-X-sq.Tt, lab('Ds','Ø'));
-  dimH(o, zd-7,  -rp, rp, 0, 0, lab('Dp','Ø'));
-  dimH(o, zd-14, -rk, rk, v.Hp, v.Hp, lab('Dk','Ø'));
-  dimH(o, zd-21, -ru, ru, g.Zj, g.Zj, lab('Du','Ø'));
+  const zd = -X-Ha-11;
+  dimH(o, zd,    -A.Rk, A.Rk, -X-A.k1, -X-A.k1, lab('Ds','Ø'));
+  dimH(o, zd-7,  -A.ro, A.ro, -X-A.top, -X-A.top, lab('Dc','Ø'));
+  dimH(o, zd-14, -rp, rp, 0, 0, lab('Dp','Ø'));
+  dimH(o, zd-21, -rk, rk, v.Hp, v.Hp, lab('Dk','Ø'));
+  dimH(o, zd-28, -ru, ru, g.Zj, g.Zj, lab('Du','Ø'));
   s += `<text class="vt" font-size="${fs*1.05}" x="${o.x}" y="${row2}" text-anchor="middle">VISTA FRONTAL · EXPLOSIONADA</text>`;
 
   /* --- Corte A–A --- */
@@ -498,17 +520,17 @@ function draw(v, m){
   if(v.Hs>0) s += `<path class="o"${Z('anillo')} fill="url(#hatch2)" fill-rule="evenodd" d="${mirror(o2,g.ringOut)} ${mirror(o2,g.ringIn)}"/>`;
   s += `<path class="o"${Z('pared')} fill="url(#hatch)" fill-rule="evenodd" d="${mirror(o2,g.domeOut)} ${mirror(o2,g.domeIn)}"/>`;
   s += `<path class="thin" d="${mirror(o2,g.bodyIn)}"/>`;
-  const zb2 = -(sq.Tp+sq.Hch);
-  s += `<path class="o"${Z('soquete')} fill="url(#hatch2)" d="${mirror(oc2,[[0,0],[rcup,0],[rcup,v.Cd],[Rs,v.Cd],[Rs,zb2],[rch,zb2],[rch,-sq.Tp],[0,-sq.Tp]])}"/>`;
-  for(const k of [-1,1]) s += `<path class="o"${Z('soquete')} fill="url(#hatch2)" d="M${P(oc2,k*4,zb2)}L${P(oc2,k*Rs,zb2)}L${P(oc2,k*Rs,zb2-sq.Tt)}L${P(oc2,k*4,zb2-sq.Tt)}Z"/>`;
+  s += `<path class="o"${Z('adaptador')} fill="url(#hatch2)" fill-rule="evenodd" d="${mirror(oc2,adOut)} ${mirror(oc2,adIn)}"/>`;
+  s += `<rect class="o"${Z('adaptador')} fill="url(#hatch)" x="${oc2.x-rcup+0.15}" y="${oc2.y}" width="${2*rcup-0.3}" height="${A.Tp}"/>`;   // plato porta-pogo
   for(const k of [-1,1]){ const x=k*v.Pm/2;
     s += `<rect class="o fi"${Z('acople')} x="${o2.x+x-v.Dm/2}" y="${o2.y-v.Hm}" width="${v.Dm}" height="${v.Hm}"/>`;     // imanes del acople
-    s += `<rect class="o fi"${Z('soquete')} x="${oc2.x+x-v.Dm/2}" y="${oc2.y}" width="${v.Dm}" height="${v.Hm}"/>`; }   // imanes del soquete
-  for(const k of [-1,1]) s += `<rect class="o fm" x="${oc2.x+k*v.Pc/2-0.65}" y="${oc2.y-0.8}" width="1.3" height="${0.8+sq.Tp}"/>`;     // pogo pins
-  s += `<polyline class="thin" points="${oc2.x+v.Pc/2},${oc2.y+sq.Tp/2} ${oc2.x+Rs+6},${oc2.y+sq.Tp/2+3} ${oc2.x+Rs+9},${oc2.y+sq.Tp/2+3}"/>`;
-  s += `<text class="sm" font-size="${fs*0.85}" x="${oc2.x+Rs+10}" y="${oc2.y+sq.Tp/2+4}">6 pogo P75-E2 · PCD Ø${fu(v.Pc)}</text>`;
-  s += `<text class="sm" font-size="${fs*0.85}" x="${oc2.x+Rs+10}" y="${oc2.y+sq.Tp/2+4+fs}">6 + 6 imanes N52 Ø${fu(v.Dm)}×${fu(v.Hm)}</text>`;
-  s += `<line class="axis" x1="${o2.x}" y1="${oc2.y+Hsq+5}" x2="${o2.x}" y2="${o2.y-g.top-5}"/>`;
+    s += `<rect class="o fi"${Z('adaptador')} x="${oc2.x+x-v.Dm/2}" y="${oc2.y}" width="${v.Dm}" height="${v.Hm}"/>`; }   // imanes del adaptador
+  for(const k of [-1,1]) s += `<rect class="o fm" x="${oc2.x+k*v.Pc/2-0.65}" y="${oc2.y-0.8}" width="1.3" height="${0.8+A.Tp}"/>`;     // pogo pins
+  const nl = (y0,yl,txt)=>{ s += `<polyline class="thin" points="${oc2.x+A.rr},${oc2.y+y0} ${oc2.x+A.Rk+6},${oc2.y+yl} ${oc2.x+A.Rk+9},${oc2.y+yl}"/><text class="sm" font-size="${fs*0.85}" x="${oc2.x+A.Rk+10}" y="${oc2.y+yl+1}">${txt}</text>`; };
+  nl(A.Tp/2, A.Tp/2+2, `plato: 6 pogo P75-E2 · PCD Ø${fu(v.Pc)}`);
+  s += `<text class="sm" font-size="${fs*0.85}" x="${oc2.x+A.Rk+10}" y="${oc2.y+A.Tp/2+3+fs}">6 + 6 imanes N52 Ø${fu(v.Dm)}×${fu(v.Hm)}</text>`;
+  nl((A.zt+A.z1)/2, (A.zt+A.z1)/2, `rosca E27 · canal Ø${fu(2*A.rcab)}`);
+  s += `<line class="axis" x1="${o2.x}" y1="${oc2.y+Ha+5}" x2="${o2.x}" y2="${o2.y-g.top-5}"/>`;
   if(g.mic && g.micInBody && v.Om>0){ const zm=g.micZ, ri=g.rIn(zm), ro=g.rOut(zm);
     s += `<rect class="fs" x="${o2.x+ri-0.3}" y="${o2.y-zm-v.Om/2}" width="${ro-ri+0.8}" height="${v.Om}"/>`;
     s += `<line class="thin" x1="${o2.x+ri}" y1="${o2.y-zm-v.Om/2}" x2="${o2.x+ro}" y2="${o2.y-zm-v.Om/2}"/><line class="thin" x1="${o2.x+ri}" y1="${o2.y-zm+v.Om/2}" x2="${o2.x+ro}" y2="${o2.y-zm+v.Om/2}"/>`; }
@@ -551,7 +573,7 @@ function draw(v, m){
     const nh = bh*0.36, rh=(bh-nh)/rows.length;
     s += `<rect class="tb" x="${bx}" y="${by}" width="${bw}" height="${bh}"/>`;
     s += `<text font-size="${fs*0.9}" font-weight="700" x="${bx+2.5}" y="${by+fs*1.2}" letter-spacing=".1em">NOTAS</text>`;
-    const notes=[isCm()?'Cotas en centímetros (1 cm = 10 mm).':'Cotas en milímetros (10 mm = 1 cm).','Cotas con ≈ son de referencia: aún sin medir.',`Altura total ensamblada: ${fum(g.top)}.`,'Soquete separado: va en el brazo (pieza 001).'];
+    const notes=[isCm()?'Cotas en centímetros (1 cm = 10 mm).':'Cotas en milímetros (10 mm = 1 cm).','Cotas con ≈ son de referencia: aún sin medir.',`Altura total ensamblada: ${fum(g.top)}.`,'Adaptador SHU separado: rosca E27 al portalámparas.'];
     notes.forEach((n,i)=>{ s+=`<text class="sm" font-size="${fs*0.8}" x="${bx+2.5}" y="${by+fs*1.2+(i+1)*fs*1.1}">${i+1}. ${esc(n)}</text>`; });
     rows.forEach((r,i)=>{ const y=by+nh+i*rh;
       s += `<line class="tb" x1="${bx}" y1="${y}" x2="${bx+bw}" y2="${y}"/>`;
@@ -573,7 +595,7 @@ function zoneInfo(z,v,m,g){
     case 'cuerpo': return {t:'Cuerpo', rows:[r('Hk','Altura del cuerpo',v.Hk,m.Hk,'Hk'), r('Du','Ø superior',v.Du,m.Du,'Du'), r('Dk','Ø inferior',v.Dk,m.Dk,'Dk'), r('e','Espesor de pared',v.e,m.e,'e'), r('Øm','Ø agujero micrófono',v.Om,m.Om,'Om'), r('Z','Altura del agujero, sobre la base del cuerpo',0,true,'Om', g.mic? fum(g.micZ-v.Hp) : 'sin micrófono')]};
     case 'anillo': return {t:'Anillo sensorial', rows:[r('Hs','Alto',v.Hs,m.Hs,'Hs'), r('Du','Ø exterior (= Ø superior del cuerpo)',v.Du,m.Du,'Du'), r('Oc','Ø ventana de la cámara',v.Oc,m.Oc,'Oc'), r('—','Pared',g.er,true,'Hs'), r('—','Micrófonos',0,true,'Hs','4 puertos Ø1,2 a 45°')]};
     case 'acople': return {t:'Acople magnético (macho, en el cuerpo)', rows:[r('Hp','Alto',v.Hp,m.Hp,'Hp'), r('Dp','Ø exterior',v.Dp,m.Dp,'Dp'), r('Pc','PCD de contactos (6 × Ø3)',v.Pc,m.Pc,'Pc'), r('Pm','PCD de imanes',v.Pm,m.Pm,'Pm'), r('Dm','Imanes N52 (6)',0,all('Dm','Hm'),'Dm', fum(v.Dm)+' × '+fum(v.Hm)), r('—','Piso del acople',g.Fp,m.Hm,'Hm'), r('Cd','Calce en el soquete',v.Cd,m.Cd,'Cd')]};
-    case 'soquete': return {t:'Soquete SHU (hembra, en el brazo)', rows:[r('Ds','Ø exterior',v.Ds,m.Ds,'Ds'), r('Cd','Profundidad de la copa',v.Cd,m.Cd,'Cd'), r('—','Ø de la copa (holgura 0,3 por lado)',v.Dp+0.6,m.Dp,'Dp'), r('—','Pogo pins',0,true,'Pc','6 × P75-E2 · PCD Ø'+fu(v.Pc)), r('—','Alto con tapa',v.Cd+Math.max(5,v.Hm+1.5)+17,m.Cd,'Cd')]};
+    case 'adaptador': return {t:'Adaptador SHU (rosca E27 → acople)', rows:[r('Ds','Ø del moleteado',v.Ds,m.Ds,'Ds'), r('Cd','Profundidad de la copa',v.Cd,m.Cd,'Cd'), r('—','Ø de la copa (holgura 0,3 por lado)',v.Dp+0.6,m.Dp,'Dp'), r('Dc','Ø de la rosca E27',v.Dc,m.Dc,'Dc'), r('P','Paso',v.P,m.P,'P'), r('Lr','Largo roscado',v.Lr,m.Lr,'Lr'), r('—','Largo total',v.Cd+adapter(v).top,all('Cd','Lr'),'Lr'), r('—','Plato porta-pogo',0,true,'Pc','6 × P75-E2 · PCD Ø'+fu(v.Pc)+' · 3 × M3')]};
     case 'pared': return {t:'Pared del cuerpo y bulbo (corte A–A)', rows:[r('e','Espesor de pared',v.e,m.e,'e'), r('Ø int','Ø interior en la base del cuerpo',2*g.rIn(v.Hp+0.01),all('Dk','e'),'Dk'), r('Ø int','Ø interior bajo el bulbo',2*g.rIn(g.Zj-0.01),all('Du','e'),'Du'), r('Ø int','Ø interior máximo del bulbo',2*g.rIn(g.Zc),all('D','e'),'D'), r('Z₀','Inicio de montaje',v.z0,m.z0,'z0')]};
   }
   const c = g.comps.find(x=>x.c.k===z); if(!c || c.off) return null;
@@ -583,7 +605,7 @@ function zoneInfo(z,v,m,g){
 function renderZone(v,m,g){
   const box=$('zinfo'), info = sel? zoneInfo(sel,v,m,g) : null;
   document.querySelectorAll('#sheet [data-z]').forEach(el=>el.classList.toggle('zsel', el.dataset.z===sel));
-  if(!info){ box.innerHTML = `<p class="hint">Haz click en una zona del plano (domo, anillo, cuerpo, acople, soquete, pared o un componente del corte) para ver sus medidas en ${un()} y su equivalente.</p>`; return; }
+  if(!info){ box.innerHTML = `<p class="hint">Haz click en una zona del plano (domo, anillo, cuerpo, acople, adaptador, pared o un componente del corte) para ver sus medidas en ${un()} y su equivalente.</p>`; return; }
   box.innerHTML = `<div class="zh"><h3>${esc(info.t)}</h3><div class="zbtns"><button type="button" id="zedit">Editar en la hoja</button><button type="button" class="ghost" id="zclose">Cerrar</button></div></div>
     <div class="zgrid">${info.rows.map(x=>`<div class="zc"><span class="k">${esc(x.code)}</span><span class="n">${esc(x.n)}</span><span class="v${x.meas?'':' ref'}">${x.txt? esc(x.txt) : (x.meas?'':'≈ ')+fum(x.val)}</span><span class="a">${x.txt? '' : '= '+alt(x.val)}${x.meas?'':' · referencia'}</span></div>`).join('')}</div>`;
   $('zclose').onclick = ()=>{ sel=null; update(); };
@@ -673,15 +695,17 @@ function update(){
   { const a=v.Pc/2, b=v.Pm/2, gap = Math.sqrt(a*a+b*b-2*a*b*Math.cos(Math.PI/6)) - 1.5 - v.Dm/2, wall = v.Dp/2 - b - v.Dm/2;
     if(gap < 1) ck.push(['bad',`Los imanes quedan a ${fum(Math.max(gap,0))} de los contactos: separa los círculos (Pm y Pc) o usa imanes más chicos.`]);
     if(wall < 1.2) ck.push(['bad',`Los imanes dejan ${fum(Math.max(wall,0))} de pared en el borde del acople (mínimo 1,2 mm): agranda Dp o achica Pm.`]);
-    if(v.Cd >= v.Hp) ck.push(['bad',`El calce del soquete (Cd) debe ser menor que el alto del acople (Hp).`]);
+    if(v.Cd >= v.Hp) ck.push(['bad',`La copa del adaptador (Cd) debe ser menos profunda que el alto del acople (Hp).`]);
     if(gap >= 1 && wall >= 1.2 && v.Cd < v.Hp) ck.push(['ok',`Acople: 6 contactos en PCD Ø${fu(v.Pc)} y 6 imanes Ø${fu(v.Dm)} × ${fu(v.Hm)} por lado con polaridad alternada; con el nervio KEY calza en una sola posición.`]); }
   if(g.mic) ck.push([g.micInBody?'ok':'bad', g.micInBody? `El micrófono queda dentro del cuerpo, con el agujero a ${fum(g.micZ-v.Hp)} sobre su base.` : `El micrófono queda fuera del cuerpo (entre ${fum(g.mic.z1-v.Hp)} y ${fum(g.mic.z2-v.Hp)} sobre su base; el cuerpo mide ${fum(v.Hk)}). Baja Z₀, achica la fuente o acuéstala.`]);
   const act = g.comps.filter(c=>!c.off);
   if(act.length){ const last=act[act.length-1], free=g.top - v.e - last.z2;
     ck.push([free>=0?'ok':'bad', free>=0? `Pila de componentes: quedan ${fum(free)} libres hasta la punta interior del bulbo.` : `La pila de componentes sobrepasa la punta interior por ${fum(-free)}.`]);
     const bad=act.filter(c=>!c.fits); if(bad.length) ck.push(['bad', `No caben: ${bad.map(c=>c.c.n).join(', ')}. Prueba cambiar la posición (de pie / acostado) o mover Z₀.`]); }
+  if(v.Dc < 25.9 || v.Dc > 26.6) ck.push(['warn',`La rosca del adaptador (Ø ${fum(v.Dc)}) se sale del E27 (26,05–26,45 mm): puede no entrar o quedar suelta en el portalámparas.`]);
+  if(v.P>0 && Math.abs(v.P-3.629)>0.3) ck.push(['warn',`Paso de rosca ${fum(v.P)} distinto al E27 (3,629 mm).`]);
   const S = stand(v,g);
-  if(!S.reach) ck.push(['bad',`Los brazos no alcanzan el soquete: entre el poste y el soquete hay ${fum(S.d)}, y con A1 ${fum(v.A1)} y A2 ${fum(v.A2)} el rango posible es ${fum(Math.abs(v.A1-v.A2))} – ${fum(v.A1+v.A2)}.`]);
+  if(!S.reach) ck.push(['bad',`Los brazos no alcanzan el portalámparas: entre el poste y el portalámparas hay ${fum(S.d)}, y con A1 ${fum(v.A1)} y A2 ${fum(v.A2)} el rango posible es ${fum(Math.abs(v.A1-v.A2))} – ${fum(v.A1+v.A2)}.`]);
   else if(S.clear < 2) ck.push(['warn',`El brazo superior pasa a ${fum(Math.max(S.clear,0))} de la ampolleta. Alarga A1 o acorta A2.`]);
   if(v.Px + v.Ad/2 + 4 > v.Bd/2 - 4) ck.push(['bad',`El poste queda fuera de la base: acerca el poste o agranda el Ø de la base.`]);
   const big = [['Base',v.Bd],['Brazo inferior',v.A1+2*S.re],['Brazo superior',v.A2+2*S.re]].filter(x=>x[1]>220);
@@ -706,8 +730,8 @@ function stand(v,g){
   const s = v.Ad/2 + 0.25, re = v.Ad/2 + 3;            // s: desfase de cada pieza respecto al plano medio (uniones traslapadas)
   // la ampolleta cuelga invertida: la cara del acople queda arriba, en zL, y la punta del domo abajo, a Hl sobre la base
   const zL = v.Bh + v.Hl + g.top, flip = M=>M.rotate([0,180,0]).translate([0,0,zL]);
-  const sq = {Tp:Math.max(5, v.Hm+1.5), Hch:14, Tt:3};      // soquete: plato pogo (cara en zL, mirando hacia abajo), cámara de cables, tapa
-  const J1 = [v.Px, v.Bh + v.Ph], J3 = [v.Ds/2 + re + 2, zL + (sq.Tp+sq.Hch)/2];
+  const A = adapter(v);                                    // adaptador SHU (cara pogo en zL) enroscado en el portalámparas del brazo
+  const J1 = [v.Px, v.Bh + v.Ph], J3 = [A.Rh + re + 2, zL + (A.hz0 + A.htop)/2];
   const dx = J3[0]-J1[0], dz = J3[1]-J1[1], d = Math.hypot(dx,dz), L1 = v.A1, L2 = v.A2;
   const reach = d > 0 && d <= L1+L2 && d >= Math.abs(L1-L2);
   let J2;
@@ -719,10 +743,24 @@ function stand(v,g){
   for(let i=0;i<=80;i++){ const t=i/80, x=J2[0]+(J3[0]-J2[0])*t, z=J2[1]+(J3[1]-J2[1])*t, zl=zL-z;
     if(zl>v.Hp && zl<g.top) clear = Math.min(clear, Math.hypot(x,s) - g.rOut(zl) - v.Ad/2); }
   const swp = [-0.15*v.Bd, -0.28*v.Bd];                 // interruptor: adelante a la izquierda, como en la foto
-  return {s, re, zL, flip, sq, J1, J2, J3, d, reach, clear, swp, top: zL + sq.Tp + sq.Hch + sq.Tt};
+  return {s, re, zL, flip, A, J1, J2, J3, d, reach, clear, swp, top: zL + A.htop};
 }
 
 /* ---------- sólidos imprimibles (manifold-3d). Cada pieza: world = sólidos ensamblados, print = orientada para la cama ---------- */
+// tubo con rosca helicoidal: radio = base + amplitud · triángulo(fase); fase 0 en zRef. Sirve para la rosca macho y la hembra
+function helixTube(W, z0, z1, P, zRef, oB, oA, iB, iA){
+  const n=128, nz=Math.max(2, Math.ceil((z1-z0)/(P/12))), pos=[], idx=[], O=[], I=[];
+  const tri = u=>{ u-=Math.floor(u); return 1-Math.abs(2*u-1); };
+  const vtx = (r,a,z)=>{ pos.push(r*Math.cos(a), r*Math.sin(a), z); return pos.length/3-1; };
+  for(let j=0;j<=nz;j++){ const z=z0+(z1-z0)*j/nz; O.push([]); I.push([]);
+    for(let i=0;i<n;i++){ const a=i/n*2*Math.PI, t=tri((z-zRef)/P - i/n); O[j].push(vtx(oB+oA*t, a, z)); I[j].push(vtx(iB+iA*t, a, z)); } }
+  const quad = (a,b,c,d)=>idx.push(a,b,c, a,c,d);
+  for(let j=0;j<nz;j++) for(let i=0;i<n;i++){ const k=(i+1)%n;
+    quad(O[j][i],O[j][k],O[j+1][k],O[j+1][i]); quad(I[j][i],I[j+1][i],I[j+1][k],I[j][k]); }
+  for(let i=0;i<n;i++){ const k=(i+1)%n; quad(O[0][i],I[0][i],I[0][k],O[0][k]); quad(O[nz][i],O[nz][k],I[nz][k],I[nz][i]); }
+  const mesh = new W.Mesh({numProp:3, vertProperties:new Float32Array(pos), triVerts:new Uint32Array(idx)}); mesh.merge();
+  return W.Manifold.ofMesh(mesh);
+}
 function buildParts(W, v, g, S){
   const {Manifold:M, CrossSection:CS} = W;
   const rev = (pts,n=128)=>M.revolve(CS.ofPolygons([pts.map(p=>[Math.max(p[0],0), p[1]]).filter((p,i,a)=>{ const q=a[(i+a.length-1)%a.length]; return Math.hypot(p[0]-q[0],p[1]-q[1])>1e-6; })], 'NonZero'), n);
@@ -733,20 +771,20 @@ function buildParts(W, v, g, S){
   const add = (k,n,grp,o)=>P.push(Object.assign({k,n,grp,qty:1,print:null,exp:[0,0,0]}, o));
   const bolt = J=>cylY(80, hole, 32).translate([J[0],0,J[1]]);
 
-  /* ampolleta-cerebro (perfiles con z desde la cara del acople; S.flip la cuelga invertida bajo el soquete) */
+  /* ampolleta-cerebro (perfiles con z desde la cara del acople; S.flip la cuelga invertida bajo el adaptador) */
   const rp=v.Dp/2, ru=v.Du/2, Fp=g.Fp, Hp=v.Hp, cut=true;
   const polar = (n,a0,r)=>Array.from({length:n},(_,i)=>{ const a=(a0+i*360/n)*Math.PI/180; return [r*Math.cos(a), r*Math.sin(a)]; });
   const pads = polar(6, 30, v.Pc/2), mags = polar(6, 0, v.Pm/2);     // contactos a 30° + k·60°, imanes intercalados; KEY hacia −Y
   const hw = (k,n,grp,list,color,exp)=>add(k,n,grp,{world:list, exp, color, metal:true, cut});
   const domo = rev([...g.domeOut, ...g.domeIn.slice().reverse()]);
-  add('domo','Domo (difusor)','Ampolleta', {mat:'PETG/PLA blanco natural · borde abajo', world:[S.flip(domo)], print:domo, exp:[0,0,-85], color:0xf4f1ea, glass:true, cut});
+  add('domo','Domo (difusor)','Ampolleta', {mat:'PETG/PLA blanco natural · borde abajo', world:[S.flip(domo)], print:domo, exp:[0,0,-125], color:0xf4f1ea, glass:true, cut});
   if(v.Hs > 0){
     const zm=(g.Zj+g.Zr)/2, rc=Math.max(Math.min(v.Oc/2, v.Hs/2-1), 0.5);
     let anillo = rev([...g.ringOut, ...g.ringIn.slice().reverse()]);
     if(v.Oc > 0) anillo = anillo.subtract(cyl(ru+2, rc, 32).rotate([90,0,0]).translate([0,0,zm]));                        // ventana de la cámara (−Y)
     for(const a of [45,135,225,315]) anillo = anillo.subtract(cyl(ru+2, 0.6, 12).rotate([90,0,0]).rotate([0,0,a+90]).translate([0,0,zm]));   // micrófonos
-    add('anillo','Anillo sensorial','Ampolleta', {mat:'PETG ahumado translúcido · de pie', world:[S.flip(anillo)], print:anillo, exp:[0,0,-55], color:0x4a4033, glass:true, cut});
-    if(v.Oc > 0) hw('camara','Cámara','Ampolleta', [S.flip(cyl(2.3, rc-0.3, 24).rotate([90,0,0]).translate([0,-(ru-2.5),zm]))], 0x0b1520, [0,0,-55]);
+    add('anillo','Anillo sensorial','Ampolleta', {mat:'PETG ahumado translúcido · de pie', world:[S.flip(anillo)], print:anillo, exp:[0,0,-95], color:0x4a4033, glass:true, cut});
+    if(v.Oc > 0) hw('camara','Cámara','Ampolleta', [S.flip(cyl(2.3, rc-0.3, 24).rotate([90,0,0]).translate([0,-(ru-2.5),zm]))], 0x0b1520, [0,0,-95]);
   }
   let cuerpo = rev([...g.shellOut, ...g.shellIn.slice().reverse(), [0,Fp], [0,0]]);
   const z1=Hp+2, z2=g.Zj-2, fins=[];
@@ -758,29 +796,38 @@ function buildParts(W, v, g, S){
   for(const [x,y] of mags) cuerpo = cuerpo.subtract(cyl(v.Hm+1.1, v.Dm/2+0.1, 32).translate([x,y,-1]));   // imanes al ras de la cara
   for(const [x,y] of pads) cuerpo = cuerpo.subtract(cyl(Fp+2, 1.55, 24).translate([x,y,-1]));           // contactos de latón Ø3
   if(g.mic && g.micInBody && v.Om>0) cuerpo = cuerpo.subtract(cyl(ru+4, v.Om/2, 32).rotate([90,0,0]).translate([0,0,g.micZ]));
-  add('cuerpo','Cuerpo + acople macho','Ampolleta', {mat:'PETG-CF o PLA negro · cara del acople abajo', world:[S.flip(cuerpo)], print:cuerpo, exp:[0,0,-30], color:0x22262b, cut});
-  hw('pads','Contactos del acople','Ampolleta', pads.map(([x,y])=>S.flip(cyl(Fp+0.2, 1.5, 24).translate([x,y,-0.2]))), 0xd4a63a, [0,0,-30]);
-  hw('imanesA','Imanes del acople','Ampolleta', mags.map(([x,y])=>S.flip(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-30]);
+  add('cuerpo','Cuerpo + acople macho','Ampolleta', {mat:'PETG-CF o PLA negro · cara del acople abajo', world:[S.flip(cuerpo)], print:cuerpo, exp:[0,0,-70], color:0x22262b, cut});
+  hw('pads','Contactos del acople','Ampolleta', pads.map(([x,y])=>S.flip(cyl(Fp+0.2, 1.5, 24).translate([x,y,-0.2]))), 0xd4a63a, [0,0,-70]);
+  hw('imanesA','Imanes del acople','Ampolleta', mags.map(([x,y])=>S.flip(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-70]);
 
-  /* soquete SHU (hembra): cara pogo en zL mirando hacia abajo, copa debajo, cámara de cables y tapa arriba */
-  const sq=S.sq, Rs=v.Ds/2, rcup=rp+0.3, rch=rp-3, Hs2=sq.Tp+sq.Hch, J3x=S.J3[0];
-  let soq = U([cyl(v.Cd+Hs2, Rs, 128).translate([0,0,-v.Cd]),
-               M.cube([J3x, v.Ad, Hs2]).translate([0, s-v.Ad/2, 0]),
-               cylY(v.Ad, Math.min(re, Hs2/2)).translate([J3x, s, Hs2/2])])
-    .subtract(cyl(v.Cd+1, rcup, 128).translate([0,0,-v.Cd-1]))                                  // copa del acople
-    .subtract(M.cube([3.6, 3.4, v.Cd+1]).translate([-1.8, -(rcup+2.2), -v.Cd-1]))             // ranura KEY
-    .subtract(cyl(sq.Hch+1, rch, 96).translate([0,0,sq.Tp]))                                   // cámara de cables
-    .subtract(cylY(30, hole, 32).translate([J3x,0,Hs2/2]));
-  for(const [x,y] of mags) soq = soq.subtract(cyl(v.Hm+1, v.Dm/2+0.1, 32).translate([x,y,-1]));
-  for(const [x,y] of pads) soq = soq.subtract(cyl(sq.Tp+2, 0.7, 16).translate([x,y,-1]));          // pogo pins P75-E2 (Ø1,3) a presión + CA
-  const ins = polar(3, 90, (Rs+rch)/2);
-  for(const [x,y] of ins) soq = soq.subtract(cyl(6, 2.1, 24).translate([x,y,Hs2-5]));             // insertos de calor M3 de la tapa
-  add('soquete','Soquete SHU (hembra)','Soporte', {mat:'PETG-CF · cara pogo arriba', world:[soq.translate([0,0,S.zL])], print:soq.rotate([180,0,0]), exp:[0,0,0], color:0x2b2f34, metal:true, cut});
-  let tapa = U([cyl(sq.Tt, Rs, 128), cyl(2, rch-0.25, 96).translate([0,0,-2])]).subtract(cyl(sq.Tt+4, 4, 32).translate([0,0,-3]));   // paso de cable Ø8
-  for(const [x,y] of ins) tapa = tapa.subtract(cyl(sq.Tt+4, 1.7, 16).translate([x,y,-3]));
-  add('tapa','Tapa del soquete','Soporte', {mat:'PETG-CF o TPU 95A · plana abajo', world:[tapa.translate([0,0,S.zL+Hs2])], print:tapa.rotate([180,0,0]), exp:[0,0,28], color:0x2b2f34, metal:true, cut});
-  hw('pogo','Pogo pins','Soporte', pads.map(([x,y])=>cyl(sq.Tp+0.8, 0.65, 12).translate([x,y,S.zL-0.8])), 0xd4a63a, [0,0,0]);
-  hw('imanesS','Imanes del soquete','Soporte', mags.map(([x,y])=>cyl(v.Hm, v.Dm/2, 32).translate([x,y,S.zL+0.05])), 0xb8bec4, [0,0,0]);
+  /* adaptador SHU (pieza 001): copa y plato porta-pogo abajo (cara en zL), moleteado, cono y rosca E27 macho arriba */
+  const A=S.A, Pt=v.P>0? v.P : 3.63, J3x=S.J3[0], up=M=>M.translate([0,0,S.zL]);
+  let ada = U([
+    rev([[A.Rb,-v.Cd],[A.Rb,A.zb],[A.rr+1.5,A.zt],[A.rr-0.1,A.zt],[A.rr-0.1,A.zt+0.5],[A.rcab,A.zt+0.5],[A.rcab,A.zb],[A.rch,A.zb],[A.rch,A.Tp],[A.rcup,A.Tp],[A.rcup,-v.Cd]]),
+    rev([[A.Rb-0.5,A.k0],[A.Rk,A.k0],[A.Rk,A.k1],[A.Rb-0.5,A.k1]]),                                          // anillo de agarre
+    helixTube(W, A.zt, A.z1, Pt, A.zt, A.rr, A.ro-A.rr, A.rcab, 0),                                         // rosca E27 macho
+    rev([[A.rcab,A.z1-0.5],[A.rr-0.1,A.z1-0.5],[A.rr-0.1,A.z1],[A.rr-2.5,A.top],[A.rcab,A.top]])]);       // punta
+  for(let i=0;i<40;i++){ const a=i/40*2*Math.PI; ada = ada.subtract(cyl(A.k1-A.k0+2, 1, 12).translate([(A.Rk+0.3)*Math.cos(a), (A.Rk+0.3)*Math.sin(a), A.k0-1])); }   // moleteado
+  ada = ada.subtract(M.cube([3.6, 3.4, v.Cd+1]).translate([-1.8, -(A.rcup+2.2), -v.Cd-1]));             // ranura KEY de la copa
+  const scr = polar(3, 30, A.rs);
+  for(const [x,y] of scr) ada = ada.subtract(cyl(5.5, 2.0, 24).translate([x,y,A.Tp-0.5]));              // insertos de calor M3 del plato
+  add('adaptador','Adaptador SHU (cuerpo)','Adaptador', {mat:'PETG-CF · vertical, cara pogo arriba', world:[up(ada)], print:ada.rotate([180,0,0]), exp:[0,0,-28], color:0x2b2f34, metal:true, cut});
+  let plato = cyl(A.Tp, A.rcup-0.15, 96);
+  for(const [x,y] of pads) plato = plato.subtract(cyl(A.Tp+2, 0.7, 16).translate([x,y,-1]));            // pogo pins P75-E2 (Ø1,3) a presión + CA
+  for(const [x,y] of mags) plato = plato.subtract(cyl(v.Hm+1, v.Dm/2+0.1, 32).translate([x,y,-1]));      // imanes al ras de la cara
+  for(const [x,y] of scr) plato = plato.subtract(cyl(A.Tp+2, 1.7, 16).translate([x,y,-1])).subtract(M.cylinder(1.9, 3.2, 1.3, 24).translate([x,y,-0.01]));   // M3 avellanado
+  add('plato','Plato porta-pogo','Adaptador', {mat:'PETG-CF o resina SLA · cara abajo', world:[up(plato)], print:plato, exp:[0,0,-42], color:0x3a3f45, metal:true, cut});
+  hw('pogo','Pogo pins','Adaptador', pads.map(([x,y])=>up(cyl(A.Tp+0.8, 0.65, 12).translate([x,y,-0.8]))), 0xd4a63a, [0,0,-42]);
+  hw('imanesS','Imanes del adaptador','Adaptador', mags.map(([x,y])=>up(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-42]);
+
+  /* portalámparas E27 en la punta del brazo: rosca hembra (0,3 mm de holgura, en fase con la del adaptador), techo con paso de cable y oreja */
+  const hm = (A.hz0+A.htop)/2, lx0 = Math.max(Math.sqrt(Math.max(A.Rh*A.Rh - (s+v.Ad/2)**2, 0)) - 0.5, A.ro+0.8);
+  const porta = U([helixTube(W, A.hz0, A.hz1, Pt, A.zt, A.Rh, 0, A.rr+0.3, A.ro-A.rr),
+                   rev([[A.rcab+0.5,A.hz1-0.5],[A.Rh,A.hz1-0.5],[A.Rh,A.htop],[A.rcab+0.5,A.htop]]),
+                   M.cube([J3x-lx0, v.Ad, A.htop-A.hz0]).translate([lx0, s-v.Ad/2, A.hz0]),
+                   cylY(v.Ad, Math.min(re, (A.htop-A.hz0)/2)).translate([J3x, s, hm])])
+    .subtract(cylY(30, hole, 32).translate([J3x,0,hm]));
+  add('porta','Portalámparas E27','Soporte', {mat:'PETG · techo abajo', world:[up(porta)], print:porta.rotate([180,0,0]), exp:[0,0,0], color:0x30353a, metal:true});
 
   /* soporte */
   const R = v.Bd/2, Pd = v.Ad;
@@ -790,7 +837,7 @@ function buildParts(W, v, g, S){
     .subtract(cyl(v.Bh+2, Pd/2+0.15).translate([v.Px,0,-1]))
     .subtract(cyl(v.Bh+2, v.Sw/2, 32).translate([S.swp[0],S.swp[1],-1]))
     .subtract(M.cylinder(16,3,3,32).rotate([0,90,0]).rotate([0,0,50]).translate([(R-10)*Math.cos(50*Math.PI/180),(R-10)*Math.sin(50*Math.PI/180),4]));
-  add('base','Base','Soporte', {mat:'PLA/PETG · imprimir boca abajo', world:[base], print:base.rotate([180,0,0]), exp:[0,0,-80], color:0x9aa1a7, metal:true});
+  add('base','Base','Soporte', {mat:'PLA/PETG · imprimir boca abajo', world:[base], print:base.rotate([180,0,0]), exp:[0,0,-160], color:0x9aa1a7, metal:true});
 
   const eye = (J,y,r=re)=>cylY(v.Ad, r).translate([J[0], y, J[1]]);
   const poste = U([cyl(v.Bh+v.Ph, Pd/2).translate([v.Px,0,0]), eye(S.J1,-s)]).subtract(bolt(S.J1));
@@ -848,7 +895,7 @@ async function init3d(){
   V3.clip = new THREE.Plane(new THREE.Vector3(0,1,0), 0);   // corte: quita la mitad delantera (y < 0)
   new ResizeObserver(()=>{ const w=box.clientWidth, h=box.clientHeight; if(!w||!h) return; r.setSize(w,h); V3.cam.aspect=w/h; V3.cam.updateProjectionMatrix(); render3d(); }).observe(box);
   document.querySelectorAll('[data-v3]').forEach(b=>b.addEventListener('click', ()=>setView(b.dataset.v3)));
-  ['v3amp','v3sop','v3ele','v3cut'].forEach(id=>$(id).addEventListener('change', applyVis));
+  ['v3amp','v3ada','v3sop','v3ele','v3cut'].forEach(id=>$(id).addEventListener('change', applyVis));
   $('v3fit').addEventListener('click', frame3d);
   $('v3parts').addEventListener('click', e=>{ const b=e.target.closest('[data-stl]'); if(b) exportSTL(b.dataset.stl); });
   if(V3.args) build3d(...V3.args);
@@ -892,7 +939,7 @@ function build3d(v,g){
 }
 function applyVis(){
   if(!V3.r) return;
-  const on = {Ampolleta:$('v3amp').checked, Otros:$('v3amp').checked, Soporte:$('v3sop').checked, 'Electrónica':$('v3ele').checked}, cut=$('v3cut').checked;
+  const on = {Ampolleta:$('v3amp').checked, Adaptador:$('v3ada').checked, Soporte:$('v3sop').checked, 'Electrónica':$('v3ele').checked}, cut=$('v3cut').checked;
   for(const m of V3.meshes){ const u=m.userData;
     m.visible = on[u.grp];
     m.material.clippingPlanes = cut && u.cut ? [V3.clip] : []; m.material.needsUpdate = true;
@@ -926,13 +973,14 @@ function renderParts(parts, v, S){
   const bl = Math.ceil((2*v.Ad + 10)/5)*5;
   $('v3parts').innerHTML = `<h2>Piezas para imprimir<small>mm · Z hacia arriba</small></h2>
     <div class="ptwrap"><table class="ptab"><thead><tr><th>Pieza</th><th>Cant.</th><th>Tamaño en la cama</th><th>cm³</th><th>Material · orientación</th><th></th></tr></thead>
-    <tbody>${grp('Ampolleta')}${grp('Soporte')}</tbody></table></div>
+    <tbody>${grp('Ampolleta')}${grp('Adaptador')}${grp('Soporte')}</tbody></table></div>
     <div class="hw"><b>No se imprime</b><ul>
-      <li>12 imanes de neodimio N52 Ø ${f(v.Dm)} × ${f(v.Hm)} mm: 6 en el acople y 6 en el soquete, pegados con polaridad alternada (N-S-N…) y enfrentados en polaridad opuesta</li>
-      <li>6 pogo pins P75-E2 (Ø1,3 × 16,5 mm) en el soquete y 6 contactos de latón Ø3 en el acople (remaches o PCB circular con pads). Pinout: P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL</li>
-      <li>3 insertos de calor M3 × 4 y 3 tornillos M3 × 8 para la tapa del soquete</li>
+      <li>12 imanes de neodimio N52 Ø ${f(v.Dm)} × ${f(v.Hm)} mm: 6 en el acople y 6 en el plato del adaptador, pegados con polaridad alternada (N-S-N…) y enfrentados en polaridad opuesta</li>
+      <li>6 pogo pins P75-E2 (Ø1,3 × 16,5 mm) en el plato del adaptador y 6 contactos de latón Ø3 en el acople (remaches o PCB circular con pads). Pinout: P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL</li>
+      <li>3 insertos de calor M3 × 4 y 3 tornillos M3 × 8 avellanados para fijar el plato porta-pogo al adaptador</li>
       <li>3 pernos M5 × ${bl} con su tuerca (va a presión en la perilla) y 6 golillas</li>
-      <li>Interruptor de palanca de Ø ${f(v.Sw)} mm en la base y cable de 4 hilos (2 × 0,5 mm² para 5 V/GND + 2 × 0,22 mm² de datos) por el brazo hasta la tapa del soquete</li>
+      <li>Interruptor de palanca de Ø ${f(v.Sw)} mm en la base y cable de 4 hilos (2 × 0,5 mm² para 5 V/GND + 2 × 0,22 mm² de datos) por el brazo, el portalámparas y el canal Ø8 del adaptador hasta el plato</li>
+      <li><b>La rosca E27 del adaptador es solo mecánica:</b> no lo enrosques en un portalámparas con 220 V, porque los pogo pins trabajan a 5 V</li>
       <li>Lastre opcional dentro de la base (golillas o arena), para que no se vuelque con el brazo extendido</li></ul></div>`;
 }
 function exportSTL(k){

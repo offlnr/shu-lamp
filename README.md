@@ -2,7 +2,7 @@
 
 Plano técnico y prototipo 3D de la Ampolleta-Cerebro SHU (proyecto CORE-AI) y su lámpara de escritorio articulada.
 
-La ampolleta no lleva rosca: se acopla magnéticamente al soquete SHU (pieza 001, ver `../core-ai/hardware/shu_soquete_planimetria.html`). El acople macho va integrado al cuerpo-disipador con 6 contactos en PCD Ø20, 6 imanes N52 con polaridad alternada y un nervio KEY; el soquete hembra va en la punta del brazo con 6 pogo pins P75-E2, sus 6 imanes y una tapa con insertos M3.
+La ampolleta no lleva rosca: se acopla magnéticamente al **adaptador SHU** (pieza 001, ver `../core-ai/hardware/shu_soquete_planimetria.html`). El adaptador se atornilla como una ampolleta normal en el portalámparas E27 del brazo y en su otro extremo tiene la hembra del acople: plato porta-pogo con 6 pogo pins P75-E2 en PCD Ø20, 6 imanes N52 y ranura KEY. El macho va integrado al cuerpo-disipador de la ampolleta: 6 contactos de latón, 6 imanes con polaridad alternada y nervio KEY. La rosca E27 es solo mecánica: los 5 V y los datos llegan por un cable que pasa por el canal de Ø8 del adaptador.
 
 Abre `index.html` en el navegador (necesita internet para cargar three.js y manifold-3d). La hoja de medidas de la izquierda alimenta dos pestañas:
 
