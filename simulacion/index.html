@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{box-sizing:border-box}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>SHU Lámpara de Estudio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: escena 3D a pantalla completa + panel de control lateral (hoja inferior en móvil). Mundo noir único, oscuro por diseño. */
+:root {
+  --ink: #0a0d12;
+  --slate: #11161d;
+  --slate-2: #171e27;
+  --line: #252f3c;
+  --fg: #dfe4eb;
+  --muted: #8692a2;
+  --amber: #ffb45a;
+  --brass: #d4a63a;
+  --ok: #5ec98c;
+  --off: #ff7d6e;
+  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--ink); color: var(--fg); font-family: var(--f-body); overflow: hidden; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 356px; }
+#stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(120% 90% at 40% 30%, #1a222d 0%, var(--ink) 70%); }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.hud { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 16px; right: 16px; pointer-events: none; display: grid; gap: 6px; }
+.eyebrow { font: 500 11px/1.3 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.hud h1 { margin: 0; font: 700 clamp(30px, 4.2vw, 48px)/0.92 var(--f-display); letter-spacing: .01em; text-transform: uppercase; text-wrap: balance; }
+.hud h1 span { color: var(--amber); }
+.status { font: 500 13px/1.4 var(--f-mono); max-width: 48ch; }
+.status b { color: var(--amber); font-weight: 500; }
+.spec { position: absolute; right: 16px; bottom: 14px; font: 400 11.5px/1.5 var(--f-mono); color: var(--muted); text-align: right; pointer-events: none; font-variant-numeric: tabular-nums; }
+.spec b { color: var(--fg); font-weight: 500; }
+.hint { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 14px; font: 400 11.5px/1.4 var(--f-mono); color: var(--muted); pointer-events: none; max-width: 40ch; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font: 500 13px var(--f-mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+
+.panel { background: var(--slate); border-left: 1px solid var(--line); overflow-y: auto; padding-block: 18px 28px; padding-left: 20px; padding-right: max(20px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; align-content: start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 11px/1 var(--f-mono); letter-spacing: .03em; padding: 6px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.chip.on i { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.chip.warn i { background: var(--off); }
+section { display: grid; gap: 12px; }
+h2 { margin: 0; font: 600 16px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+.switch { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--slate-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: 600 15px var(--f-body); cursor: pointer; text-align: left; width: 100%; }
+.switch .track { width: 46px; height: 26px; border-radius: 13px; background: var(--line); position: relative; flex: none; transition: background .2s; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+.switch[aria-checked="true"] .track { background: var(--amber); }
+.switch[aria-checked="true"] .track::after { transform: translateX(20px); background: var(--ink); }
+.switch small { display: block; font: 400 12px var(--f-body); color: var(--muted); margin-top: 2px; }
+
+.field { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; }
+.field label { font-size: 13px; }
+.field output { font: 500 12px var(--f-mono); color: var(--amber); font-variant-numeric: tabular-nums; }
+.field input { grid-column: 1 / -1; width: 100%; accent-color: var(--amber); margin: 0; }
+#kelvin { background: linear-gradient(90deg, #ff9a3c, #ffc58a, #ffe3c4); height: 4px; border-radius: 2px; appearance: none; -webkit-appearance: none; }
+#kelvin::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); border: 2px solid var(--ink); cursor: pointer; }
+#kelvin::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 2px solid var(--ink); cursor: pointer; }
+
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { background: transparent; border: 0; border-right: 1px solid var(--line); color: var(--muted); padding: 9px 4px; font: 500 12.5px var(--f-body); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--amber); color: var(--ink); }
+
+.btn { background: var(--slate-2); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font: 500 13px var(--f-body); cursor: pointer; }
+.btn:hover, .seg button:hover:not([aria-pressed="true"]), .switch:hover { border-color: #3a4759; color: var(--fg); }
+.btn.primary { border-color: var(--brass); color: var(--amber); }
+.btn[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.row .btn { flex: 1 1 auto; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+.pins { width: 100%; border-collapse: collapse; font: 400 12px var(--f-mono); font-variant-numeric: tabular-nums; }
+.pins td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.pins td:first-child { color: var(--muted); width: 26px; }
+.pins td:nth-child(2) { width: 56px; }
+.pins td:last-child { text-align: right; color: var(--muted); }
+.pins tr.live td:last-child { color: var(--ok); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.check input { accent-color: var(--amber); }
+
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 54% minmax(0, 1fr); }
+  .panel { border-left: 0; border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hint, .spec { display: none; }
+  .status { font-size: 12px; }
+}
+</style>
+
+<div class="app">
+  <div id="stage">
+    <div class="hud">
+      <div class="eyebrow">CORE-AI · Un cerebro, cuatro cuerpos · adaptador SHU (pieza 001)</div>
+      <h1>SHU <span>/</span> Lámpara de estudio</h1>
+      <div class="status" id="status" aria-live="polite">Armando el modelo…</div>
+    </div>
+    <div class="loading" id="loading">Armando sólidos…</div>
+    <div class="hint">Arrastra la ampolleta o el brazo para moverla · arrastra el portalámparas (o Shift + arrastrar) para inclinarla · arrastra el fondo para orbitar · clic en un soquete vacío para llevar la ampolleta ahí</div>
+    <div class="spec" id="spec"></div>
+  </div>
+
+  <aside class="panel">
+    <div class="chips">
+      <span class="chip" id="chipPower"><i></i><span>5 V</span></span>
+      <span class="chip" id="chipDock"><i></i><span>Acople</span></span>
+      <span class="chip" id="chipCam"><i></i><span>Cámara</span></span>
+    </div>
+
+    <section>
+      <h2>Dónde acoplar la ampolleta</h2>
+      <div class="row">
+        <button class="btn" data-dock="desk" aria-pressed="true">Escritorio</button>
+        <button class="btn" data-dock="ceiling" aria-pressed="false">Techo</button>
+        <button class="btn" data-dock="velador" aria-pressed="false">Velador</button>
+        <button class="btn" data-dock="wall" aria-pressed="false">Pared</button>
+      </div>
+      <p class="note" id="dockNote"></p>
+    </section>
+
+    <section>
+      <h2>Interruptor de palanca</h2>
+      <button class="switch" id="power" role="switch" aria-checked="true">
+        <span class="track"></span>
+        <span><span id="powerLabel">Encendida</span><small>Apagar corta los 5 V: cámara y micrófonos quedan sin corriente.</small></span>
+      </button>
+    </section>
+
+    <section>
+      <h2>Luz</h2>
+      <div class="field"><label for="bright">Brillo</label><output id="brightOut">80 %</output><input id="bright" type="range" min="0" max="100" value="80"></div>
+      <div class="field"><label for="kelvin">Temperatura de color</label><output id="kelvinOut">2700 K</output><input id="kelvin" type="range" min="2200" max="4500" step="50" value="2700"></div>
+      <div class="field"><label for="room">Luz de la habitación</label><output id="roomOut">70 %</output><input id="room" type="range" min="0" max="100" value="70"></div>
+      <div class="seg" role="group" aria-label="Lenguaje de luz">
+        <button data-mode="reposo" aria-pressed="true">Reposo</button>
+        <button data-mode="escuchando" aria-pressed="false">Escucha</button>
+        <button data-mode="pensando" aria-pressed="false">Piensa</button>
+        <button data-mode="flow" aria-pressed="false">Flow</button>
+      </div>
+      <p class="note" id="modeNote"></p>
+    </section>
+
+    <section>
+      <h2>Postura del brazo</h2>
+      <p class="note">Arrastra la ampolleta o los brazos en la escena. La lámpara gira sobre el poste y el codo se recalcula solo, con la misma cinemática del plano. Para inclinar la ampolleta, arrastra el portalámparas negro sobre ella, usa Shift + arrastrar o mueve el deslizador.</p>
+      <div class="field"><label for="tilt">Inclinación de la ampolleta</label><output id="tiltOut">0°</output><input id="tilt" type="range" min="-100" max="100" value="0"></div>
+      <table class="pins" aria-label="Ángulos del brazo">
+        <tbody>
+          <tr><td></td><td>Giro</td><td id="angYaw">0°</td></tr>
+          <tr><td></td><td>Hombro</td><td id="angShoulder">—</td></tr>
+          <tr><td></td><td>Codo</td><td id="angElbow">—</td></tr>
+          <tr><td></td><td>Hl</td><td id="angHeight">—</td></tr>
+        </tbody>
+      </table>
+      <div class="row">
+        <button class="btn" id="poseDemo">Postura de lectura</button>
+        <button class="btn" id="resetPose">Restablecer</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Acople magnético</h2>
+      <button class="btn primary" id="dock">Desacoplar ampolleta</button>
+      <table class="pins" aria-label="Pinout del acople">
+        <tbody id="pinRows"></tbody>
+      </table>
+      <p class="note">6 pogo pins P75-E2 en PCD Ø20 y 6 + 6 imanes N52 con polaridad alternada. El nervio KEY hace que calce en una sola posición.</p>
+    </section>
+
+    <section>
+      <h2>Vista</h2>
+      <div class="row">
+        <button class="btn" data-view="room">Habitación</button>
+        <button class="btn" data-view="ampolleta">Ampolleta</button>
+        <button class="btn" data-view="acople">Acople</button>
+        <button class="btn" data-view="cenital">Cenital</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="explode" aria-pressed="false">Explosionada</button>
+        <button class="btn" id="cut" aria-pressed="false">Ver por dentro</button>
+      </div>
+      <label class="check"><input type="checkbox" id="spin"> Rotación automática</label>
+    </section>
+  </aside>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = (id) => document.getElementById(id);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================================================================
+   Modelo paramétrico de shu-lamp-main/index.html (sin cambios de diseño):
+   medidas de referencia + las medidas tomadas del plano (SEED).
+   ================================================================ */
+const REF = {Hb:65, D:80, Hs:14, Oc:8, Hk:60, Du:65, Dk:46, e:1.5, Om:3, Hp:12, Dp:40, Pc:20, Dm:6, Hm:3, Pm:30,
+  Ds:52, Cd:8, Dc:26.4, P:3.63, Lr:24, z0:0, gap:2, Bd:150, Bh:14, Px:45, Ph:40, Ad:16, A1:300, A2:260, Hl:80, Bt:5, Sw:6};
+const COMPS = [
+  {k:'psu', n:'Regulador / fuente', cls:'cpsu', color:0xf0dfbf, ref:{l:0,w:20,h:15,o:'v'}},
+  {k:'mic', n:'Micrófono', cls:'cmic', color:0xe0d5ee, ref:{l:14,w:14,h:3,o:'v'}},
+  {k:'esp', n:'Placa ESP32', cls:'cesp', color:0xd2e5cd, ref:{l:22.5,w:18,h:4.5,o:'v'}},
+];
+const SEED = {Hb:65, D:80, Hk:60, Du:65, Dk:46};
+function values(hl){
+  const v = Object.assign({}, REF, SEED, {Hl:hl});
+  for(const c of COMPS){ v[c.k+'_l']=c.ref.l; v[c.k+'_w']=c.ref.w; v[c.k+'_h']=c.ref.h; v[c.k+'_o']=c.ref.o; }
+  return v;
+}
+
+function geom(v){
+  const g = Object.assign({}, v);
+  const R = g.R = v.D/2, rp = v.Dp/2, rk = v.Dk/2, ru = v.Du/2, e = v.e, Hp = v.Hp;
+  const Zj = g.Zj = Hp + v.Hk, Zr = g.Zr = Zj + v.Hs;
+  const Zc = g.Zc = Math.max(Zr + v.Hb - R, Zr + 1);
+  g.top = Zc + R; g.L = g.top;
+  g.Fp = v.Hm + 1.2;
+  const rj = Math.min(ru, 0.98*R), a0 = Math.asin(rj/R), c = (Zc-Zr)/Math.cos(a0);
+  const bz = []; for(let i=1;i<=24;i++){ const t=a0+(Math.PI/2-a0)*i/24; bz.push([R*Math.sin(t), Zc - c*Math.cos(t)]); }
+  g.side = [[rj,Zr], ...bz];
+  const arc = r=>{ const a=[]; for(let i=1;i<=24;i++){ const t=i/24*Math.PI/2; a.push([r*Math.cos(t), Zc + r*Math.sin(t)]); } return a; };
+  const mx = x=>Math.max(x,0.5);
+  g.er = 2; g.rpi = mx(Math.min(rp-2.5, rk-e));
+  g.shellOut = [[rp,0],[rp,Hp],[rk,Hp],[ru,Zj]];
+  const Hh = Hp + 2;
+  g.shellIn  = [[g.rpi,g.Fp],[g.rpi,Hh],[mx(rk-e + (ru-rk)*2/Math.max(v.Hk,2)),Hh],[mx(ru-e),Zj]];
+  g.ringOut  = [[ru,Zj],[ru,Zr]];  g.ringIn = [[mx(ru-g.er),Zj],[mx(ru-g.er),Zr]];
+  g.domeOut  = [[ru,Zr], ...bz, ...arc(R)];
+  g.domeIn   = [[mx(ru-e),Zr], ...bz.map(p=>[mx(p[0]-e),p[1]]), ...arc(mx(R-e))];
+  g.body   = [...g.shellOut, ...g.domeOut];
+  g.bodyIn = [...g.shellIn, ...(v.Hs>0? g.ringIn : []), ...g.domeIn];
+  const lerp = (P,z)=>{ let best=Infinity;
+    for(let i=0;i<P.length-1;i++){ const [x1,z1]=P[i],[x2,z2]=P[i+1]; if(z2>z1 && z>=z1 && z<=z2) best=Math.min(best, x1+(x2-x1)*(z-z1)/(z2-z1)); }
+    return best===Infinity?0:best; };
+  g.rIn  = z=> lerp(g.bodyIn,z);
+  g.rOut = z=> lerp(g.body,z);
+  let z = Hp + v.z0; g.comps = [];
+  for(const c of COMPS){
+    const l=v[c.k+'_l'], w=v[c.k+'_w'], h=v[c.k+'_h'], o=v[c.k+'_o'];
+    if(!(l>0&&w>0&&h>0)){ g.comps.push({c,off:true}); continue; }
+    const hz = o==='v'? l : h, across = o==='v'? w : l, depth = o==='v'? h : w;
+    const z1=z, z2=z+hz, need=Math.hypot(across/2, depth/2);
+    let minR=Infinity; for(let q=z1;q<=z2+1e-6;q+=0.25) minR=Math.min(minR, g.rIn(q));
+    const over = z2 > g.top - e;
+    g.comps.push({c,l,w,h,o,z1,z2,across,depth,need,minR,fits:minR>=need && !over, over, slack:minR-need});
+    z = z2 + v.gap;
+  }
+  g.mic = g.comps.find(c=>c.c.k==='mic' && !c.off) || null;
+  if(g.mic){ g.micZ=(g.mic.z1+g.mic.z2)/2; g.micInBody = g.mic.z1>=Hp && g.mic.z2<=Zj; }
+  return g;
+}
+
+function adapter(v){
+  const a = {rcup: v.Dp/2 + 0.3, Tp: Math.max(5, v.Hm+1.5), Rb: v.Ds/2 - 2, Rk: v.Ds/2, k0: 4, k1: 16, zb: 30, zt: 36, rch: v.Dp/2 - 6, rcab: 4};
+  a.ro = v.Dc/2; a.rr = a.ro - 0.9;
+  a.z1 = a.zt + v.Lr; a.top = a.z1 + 3;
+  a.rs = a.rcup - 3.8;
+  a.hz0 = a.zt + 2; a.hz1 = a.z1 + 5.5;
+  a.Rh = a.ro + 6.5; a.htop = a.hz1 + 4;
+  return a;
+}
+
+function stand(v,g){
+  const s = v.Ad/2 + 0.25, re = v.Ad/2 + 3;
+  const zL = v.Bh + v.Hl + g.top, flip = M=>M.rotate([0,180,0]).translate([0,0,zL]);
+  const A = adapter(v);
+  const J1 = [v.Px, v.Bh + v.Ph], J3 = [A.Rh + re + 2, zL + (A.hz0 + A.htop)/2];
+  const dx = J3[0]-J1[0], dz = J3[1]-J1[1], d = Math.hypot(dx,dz), L1 = v.A1, L2 = v.A2;
+  const reach = d > 0 && d <= L1+L2 && d >= Math.abs(L1-L2);
+  let J2;
+  if(reach){ const a=(L1*L1-L2*L2+d*d)/(2*d), h=Math.sqrt(Math.max(L1*L1-a*a,0)), mx=J1[0]+a*dx/d, mz=J1[1]+a*dz/d;
+    const c1=[mx+h*dz/d, mz-h*dx/d], c2=[mx-h*dz/d, mz+h*dx/d]; J2 = c1[0]>c2[0]? c1 : c2; }
+  else { const u = L1/(L1+L2||1); J2 = [J1[0]+dx*u, J1[1]+dz*u]; }
+  const swp = [-0.15*v.Bd, -0.28*v.Bd];
+  return {s, re, zL, flip, A, J1, J2, J3, d, reach, swp, top: zL + A.htop};
+}
+
+function helixTube(W, z0, z1, P, zRef, oB, oA, iB, iA){
+  const n=128, nz=Math.max(2, Math.ceil((z1-z0)/(P/12))), pos=[], idx=[], O=[], I=[];
+  const tri = u=>{ u-=Math.floor(u); return 1-Math.abs(2*u-1); };
+  const vtx = (r,a,z)=>{ pos.push(r*Math.cos(a), r*Math.sin(a), z); return pos.length/3-1; };
+  for(let j=0;j<=nz;j++){ const z=z0+(z1-z0)*j/nz; O.push([]); I.push([]);
+    for(let i=0;i<n;i++){ const a=i/n*2*Math.PI, t=tri((z-zRef)/P - i/n); O[j].push(vtx(oB+oA*t, a, z)); I[j].push(vtx(iB+iA*t, a, z)); } }
+  const quad = (a,b,c,d)=>idx.push(a,b,c, a,c,d);
+  for(let j=0;j<nz;j++) for(let i=0;i<n;i++){ const k=(i+1)%n;
+    quad(O[j][i],O[j][k],O[j+1][k],O[j+1][i]); quad(I[j][i],I[j+1][i],I[j+1][k],I[j][k]); }
+  for(let i=0;i<n;i++){ const k=(i+1)%n; quad(O[0][i],I[0][i],I[0][k],O[0][k]); quad(O[nz][i],O[nz][k],I[nz][k],I[nz][i]); }
+  const mesh = new W.Mesh({numProp:3, vertProperties:new Float32Array(pos), triVerts:new Uint32Array(idx)}); mesh.merge();
+  return W.Manifold.ofMesh(mesh);
+}
+
+function buildParts(W, v, g, S){
+  const {Manifold:M, CrossSection:CS} = W;
+  const rev = (pts,n=128)=>M.revolve(CS.ofPolygons([pts.map(p=>[Math.max(p[0],0), p[1]]).filter((p,i,a)=>{ const q=a[(i+a.length-1)%a.length]; return Math.hypot(p[0]-q[0],p[1]-q[1])>1e-6; })], 'NonZero'), n);
+  const cyl = (h,r,n=64)=>M.cylinder(h,r,r,n);
+  const cylY = (h,r,n=64)=>M.cylinder(h,r,r,n,true).rotate([90,0,0]);
+  const U = a=>M.union(a);
+  const s = S.s, re = S.re, hole = (v.Bt+0.3)/2, P = [];
+  const add = (k,n,grp,o)=>P.push(Object.assign({k,n,grp,qty:1,exp:[0,0,0]}, o));
+  const bolt = J=>cylY(80, hole, 32).translate([J[0],0,J[1]]);
+
+  const rp=v.Dp/2, ru=v.Du/2, Fp=g.Fp, Hp=v.Hp, cut=true;
+  const polar = (n,a0,r)=>Array.from({length:n},(_,i)=>{ const a=(a0+i*360/n)*Math.PI/180; return [r*Math.cos(a), r*Math.sin(a)]; });
+  const pads = polar(6, 30, v.Pc/2), mags = polar(6, 0, v.Pm/2);
+  const hw = (k,n,grp,list,color,exp)=>add(k,n,grp,{world:list, exp, color, metal:true, cut});
+  const domo = rev([...g.domeOut, ...g.domeIn.slice().reverse()]);
+  add('domo','Domo (difusor)','Ampolleta', {world:[S.flip(domo)], exp:[0,0,-125], color:0xf4f1ea, glass:true, cut});
+  if(v.Hs > 0){
+    const zm=(g.Zj+g.Zr)/2, rc=Math.max(Math.min(v.Oc/2, v.Hs/2-1), 0.5);
+    let anillo = rev([...g.ringOut, ...g.ringIn.slice().reverse()]);
+    if(v.Oc > 0) anillo = anillo.subtract(cyl(ru+2, rc, 32).rotate([90,0,0]).translate([0,0,zm]));
+    for(const a of [45,135,225,315]) anillo = anillo.subtract(cyl(ru+2, 0.6, 12).rotate([90,0,0]).rotate([0,0,a+90]).translate([0,0,zm]));
+    add('anillo','Anillo sensorial','Ampolleta', {world:[S.flip(anillo)], exp:[0,0,-95], color:0x4a4033, glass:true, cut});
+    if(v.Oc > 0) hw('camara','Cámara','Ampolleta', [S.flip(cyl(2.3, rc-0.3, 24).rotate([90,0,0]).translate([0,-(ru-2.5),zm]))], 0x0b1520, [0,0,-95]);
+  }
+  let cuerpo = rev([...g.shellOut, ...g.shellIn.slice().reverse(), [0,Fp], [0,0]]);
+  const z1=Hp+2, z2=g.Zj-2, fins=[];
+  if(z2 > z1+4) for(let i=0;i<24;i++){ const a=i*15, d=((a-270)%360+360)%360;
+    if(g.mic && g.micInBody && v.Om>0 && (d<12 || d>348)) continue;
+    const r1=g.rOut(z1), r2=g.rOut(z2), t=0.8;
+    fins.push(M.hull([[r1-1,-t,z1],[r1-1,t,z1],[r1+2.5,-t,z1],[r1+2.5,t,z1],[r2-1,-t,z2],[r2-1,t,z2],[r2+1,-t,z2],[r2+1,t,z2]]).rotate([0,0,a])); }
+  cuerpo = U([cuerpo, ...fins, M.cube([3, 2, Hp+1]).translate([-1.5, -(rp+1.5), 0])]);
+  for(const [x,y] of mags) cuerpo = cuerpo.subtract(cyl(v.Hm+1.1, v.Dm/2+0.1, 32).translate([x,y,-1]));
+  for(const [x,y] of pads) cuerpo = cuerpo.subtract(cyl(Fp+2, 1.55, 24).translate([x,y,-1]));
+  if(g.mic && g.micInBody && v.Om>0) cuerpo = cuerpo.subtract(cyl(ru+4, v.Om/2, 32).rotate([90,0,0]).translate([0,0,g.micZ]));
+  add('cuerpo','Cuerpo + acople macho','Ampolleta', {world:[S.flip(cuerpo)], exp:[0,0,-70], color:0x22262b, cut});
+  hw('pads','Contactos del acople','Ampolleta', pads.map(([x,y])=>S.flip(cyl(Fp+0.2, 1.5, 24).translate([x,y,-0.2]))), 0xd4a63a, [0,0,-70]);
+  hw('imanesA','Imanes del acople','Ampolleta', mags.map(([x,y])=>S.flip(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-70]);
+
+  const A=S.A, Pt=v.P>0? v.P : 3.63, J3x=S.J3[0], up=M=>M.translate([0,0,S.zL]);
+  let ada = U([
+    rev([[A.Rb,-v.Cd],[A.Rb,A.zb],[A.rr+1.5,A.zt],[A.rr-0.1,A.zt],[A.rr-0.1,A.zt+0.5],[A.rcab,A.zt+0.5],[A.rcab,A.zb],[A.rch,A.zb],[A.rch,A.Tp],[A.rcup,A.Tp],[A.rcup,-v.Cd]]),
+    rev([[A.Rb-0.5,A.k0],[A.Rk,A.k0],[A.Rk,A.k1],[A.Rb-0.5,A.k1]]),
+    helixTube(W, A.zt, A.z1, Pt, A.zt, A.rr, A.ro-A.rr, A.rcab, 0),
+    rev([[A.rcab,A.z1-0.5],[A.rr-0.1,A.z1-0.5],[A.rr-0.1,A.z1],[A.rr-2.5,A.top],[A.rcab,A.top]])]);
+  for(let i=0;i<40;i++){ const a=i/40*2*Math.PI; ada = ada.subtract(cyl(A.k1-A.k0+2, 1, 12).translate([(A.Rk+0.3)*Math.cos(a), (A.Rk+0.3)*Math.sin(a), A.k0-1])); }
+  ada = ada.subtract(M.cube([3.6, 3.4, v.Cd+1]).translate([-1.8, -(A.rcup+2.2), -v.Cd-1]));
+  const scr = polar(3, 30, A.rs);
+  for(const [x,y] of scr) ada = ada.subtract(cyl(5.5, 2.0, 24).translate([x,y,A.Tp-0.5]));
+  add('adaptador','Adaptador SHU (cuerpo)','Adaptador', {world:[up(ada)], exp:[0,0,-28], color:0x2b2f34, metal:true, cut});
+  let plato = cyl(A.Tp, A.rcup-0.15, 96);
+  for(const [x,y] of pads) plato = plato.subtract(cyl(A.Tp+2, 0.7, 16).translate([x,y,-1]));
+  for(const [x,y] of mags) plato = plato.subtract(cyl(v.Hm+1, v.Dm/2+0.1, 32).translate([x,y,-1]));
+  for(const [x,y] of scr) plato = plato.subtract(cyl(A.Tp+2, 1.7, 16).translate([x,y,-1])).subtract(M.cylinder(1.9, 3.2, 1.3, 24).translate([x,y,-0.01]));
+  add('plato','Plato porta-pogo','Adaptador', {world:[up(plato)], exp:[0,0,-42], color:0x3a3f45, metal:true, cut});
+  hw('pogo','Pogo pins','Adaptador', pads.map(([x,y])=>up(cyl(A.Tp+0.8, 0.65, 12).translate([x,y,-0.8]))), 0xd4a63a, [0,0,-42]);
+  hw('imanesS','Imanes del adaptador','Adaptador', mags.map(([x,y])=>up(cyl(v.Hm, v.Dm/2, 32).translate([x,y,0.05]))), 0xb8bec4, [0,0,-42]);
+
+  const hm = (A.hz0+A.htop)/2, lx0 = Math.max(Math.sqrt(Math.max(A.Rh*A.Rh - (s+v.Ad/2)**2, 0)) - 0.5, A.ro+0.8);
+  const porta = U([helixTube(W, A.hz0, A.hz1, Pt, A.zt, A.Rh, 0, A.rr+0.3, A.ro-A.rr),
+                   rev([[A.rcab+0.5,A.hz1-0.5],[A.Rh,A.hz1-0.5],[A.Rh,A.htop],[A.rcab+0.5,A.htop]]),
+                   M.cube([J3x-lx0, v.Ad, A.htop-A.hz0]).translate([lx0, s-v.Ad/2, A.hz0]),
+                   cylY(v.Ad, Math.min(re, (A.htop-A.hz0)/2)).translate([J3x, s, hm])])
+    .subtract(cylY(30, hole, 32).translate([J3x,0,hm]));
+  add('porta','Portalámparas E27','Soporte', {world:[up(porta)], color:0x30353a, metal:true});
+
+  const R = v.Bd/2, Pd = v.Ad;
+  let base = U([cyl(v.Bh-2, R, 192), M.cylinder(2, R, R-2, 192).translate([0,0,v.Bh-2])])
+    .subtract(cyl(v.Bh-2, R-4, 192).translate([0,0,-1]))
+    .add(cyl(v.Bh, Pd/2+4).translate([v.Px,0,0]))
+    .subtract(cyl(v.Bh+2, Pd/2+0.15).translate([v.Px,0,-1]))
+    .subtract(cyl(v.Bh+2, v.Sw/2, 32).translate([S.swp[0],S.swp[1],-1]))
+    .subtract(M.cylinder(16,3,3,32).rotate([0,90,0]).rotate([0,0,50]).translate([(R-10)*Math.cos(50*Math.PI/180),(R-10)*Math.sin(50*Math.PI/180),4]));
+  add('base','Base','Soporte', {world:[base], exp:[0,0,-160], color:0x9aa1a7, metal:true});
+
+  const eye = (J,y,r=re)=>cylY(v.Ad, r).translate([J[0], y, J[1]]);
+  const poste = U([cyl(v.Bh+v.Ph, Pd/2).translate([v.Px,0,0]), eye(S.J1,-s)]).subtract(bolt(S.J1));
+  add('poste','Poste','Soporte', {world:[poste], exp:[40,0,-30], color:0x5b6268, metal:true});
+
+  const arm = (A,B,ys,k,n,exp)=>{
+    const L = Math.hypot(B[0]-A[0], B[1]-A[1]), th = Math.atan2(B[1]-A[1], B[0]-A[0])*180/Math.PI, rOct = (v.Ad/2)/Math.cos(Math.PI/8);
+    const loc = U([M.cylinder(L, rOct, rOct, 8).rotate([0,90,0]).rotate([22.5,0,0]), cylY(v.Ad, re), cylY(v.Ad, re).translate([L,0,0])])
+      .subtract(cylY(30, hole, 32)).subtract(cylY(30, hole, 32).translate([L,0,0]));
+    add(k, n, 'Soporte', {world:[loc.translate([0,ys,0]).rotate([0,-th,0]).translate([A[0],0,A[1]])], exp, color:0x3d4349, metal:true});
+  };
+  arm(S.J1, S.J2,  s, 'brazo1', 'Brazo inferior', [38,0,0]);
+  arm(S.J2, S.J3, -s, 'brazo2', 'Brazo superior', [20,-30,25]);
+
+  let knob = cyl(10, 9, 48);
+  for(let i=0;i<18;i++){ const a=i/18*2*Math.PI; knob = knob.subtract(cyl(12, 1.1, 16).translate([9.4*Math.cos(a), 9.4*Math.sin(a), -1])); }
+  knob = knob.subtract(M.cylinder(4.3, 4.75, 4.75, 6).translate([0,0,5.8])).subtract(cyl(12, 2.65, 32).translate([0,0,-1]));
+  const ky = -(s + v.Ad/2);
+  add('perilla','Perilla de articulación','Soporte', {qty:3,
+    world:[S.J1,S.J2,S.J3].map(J=>knob.rotate([90,0,0]).translate([J[0], ky, J[1]])), exp:[0,-26,0], color:0x2a2e33, metal:true});
+  return P;
+}
+
+/* ================================================================
+   Render: misma geometría, nueva puesta en escena
+   ================================================================ */
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+renderer.localClippingEnabled = true;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0d12);
+scene.fog = new THREE.Fog(0x0a0d12, 7000, 18000);
+const pmrem = new THREE.PMREMGenerator(renderer);
+
+// estudio fotográfico oscuro: softboxes que dibujan los brillos sobre el negro
+function studioEnv(){
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(30, 30, 30), new THREE.MeshBasicMaterial({ color: 0x1c222b, side: THREE.BackSide })));
+  const panel = (w, h, color, k, pos) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.set(...pos); m.lookAt(0, 0, 0); s.add(m);
+  };
+  panel(9, 6, 0xc4d4ff, 3.2, [-8, 7, 7]);
+  panel(1.6, 14, 0x9fb8e0, 2.6, [10, 1, -6]);
+  panel(12, 12, 0xffffff, 1.4, [0, 12, 0]);
+  panel(10, 7, 0xe6eeff, 1.6, [9, 4, 8]);
+  panel(7, 2.5, 0xffc890, 2.2, [5, -3, 10]);
+  return pmrem.fromScene(s, 0.02).texture;
+}
+scene.environment = studioEnv();
+
+const camera = new THREE.PerspectiveCamera(36, 1, 5, 40000);
+camera.position.set(620, 460, 900);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(110, 150, 0);
+controls.enableDamping = true;
+controls.minDistance = 120;
+controls.maxDistance = 12000;
+controls.autoRotateSpeed = 0.6;
+
+const hemi = new THREE.HemisphereLight(0x9fb0c8, 0x3a2a1e, 1);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xdfe6f2, 2);   // luz de día por la ventana
+key.position.set(-2100, 2700, 1350);
+key.target.position.set(300, -300, 1000);
+scene.add(key.target);
+key.castShadow = true;
+key.shadow.mapSize.set(4096, 4096);
+Object.assign(key.shadow.camera, { left: -3400, right: 3400, top: 3400, bottom: -3400, near: 10, far: 9000 });
+key.shadow.bias = -0.0002;
+key.shadow.normalBias = 1;
+key.shadow.radius = 4;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x86a6dd, 1.1);
+rim.position.set(600, 380, -900);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xe8eef8, 0.8);   // relleno frontal, sin sombra
+fill.position.set(700, 500, 900);
+scene.add(fill);
+
+/* ================================================================
+   Habitación (mm, piso en y = −750; la cubierta del escritorio está en y = 0)
+   ================================================================ */
+const FLOOR = -750, CEIL = 1850, WALL_B = -560, WALL_L = -2300, WALL_R = 3000, FRONT = 3200;
+
+function woodTextures(base, light, dark, repeat){
+  const mk = () => { const c = document.createElement('canvas'); c.width = c.height = 1024; return c; };
+  const col = mk(), rgh = mk(), x = col.getContext('2d'), r = rgh.getContext('2d');
+  x.fillStyle = base; x.fillRect(0, 0, 1024, 1024);
+  r.fillStyle = '#8a8a8a'; r.fillRect(0, 0, 1024, 1024);
+  for(let i = 0; i < 320; i++){
+    const y = Math.random() * 1024, a = 0.03 + Math.random() * 0.09, w = 1 + Math.random() * 5, isDark = Math.random() < 0.55;
+    x.strokeStyle = isDark ? `rgba(${dark},${a})` : `rgba(${light},${a * 0.7})`;
+    r.strokeStyle = isDark ? `rgba(200,200,200,${a * 1.5})` : `rgba(60,60,60,${a})`;
+    for(const ctx of [x, r]){
+      ctx.lineWidth = w; ctx.beginPath();
+      for(let px = 0; px <= 1024; px += 16) ctx.lineTo(px, y + Math.sin(px / 140 + i) * 6 + Math.sin(px / 37 + i * 3) * 1.5);
+      ctx.stroke();
+    }
+  }
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); if(srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t; };
+  return { map: tex(col, true), roughnessMap: tex(rgh, false) };
+}
+const walnut = new THREE.MeshPhysicalMaterial({ ...woodTextures('#35241a', '130,88,55', '18,10,5', [2, 1]), roughness: 0.7, clearcoat: 0.35, clearcoatRoughness: 0.35, envMapIntensity: 0.5 });
+const oak = new THREE.MeshPhysicalMaterial({ ...woodTextures('#6b4f38', '170,130,90', '40,25,15', [5, 7]), roughness: 0.75, clearcoat: 0.2, clearcoatRoughness: 0.5, envMapIntensity: 0.4 });
+const satinBlack = new THREE.MeshPhysicalMaterial({ color: 0x121316, roughness: 0.42, metalness: 0.15, clearcoat: 0.7, clearcoatRoughness: 0.18, envMapIntensity: 1.2 });
+const fabric = (color) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.95, sheen: 0.6, sheenRoughness: 0.8, sheenColor: new THREE.Color(0xffffff), envMapIntensity: 0.4 });
+
+const room = new THREE.Group(); scene.add(room);
+function put(geo, mat, x, y, z, { cast = true, recv = true, ry = 0, parent = room } = {}){
+  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry;
+  m.castShadow = cast; m.receiveShadow = recv; parent.add(m); return m;
+}
+const H = CEIL - FLOOR, cx = (WALL_L + WALL_R) / 2, cz = (WALL_B + FRONT) / 2;
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x4b525c, roughness: 0.92 });
+put(new THREE.PlaneGeometry(WALL_R - WALL_L, FRONT - WALL_B), oak, cx, FLOOR, cz, { cast: false }).rotation.x = -Math.PI / 2;
+put(new THREE.PlaneGeometry(WALL_R - WALL_L, FRONT - WALL_B), new THREE.MeshStandardMaterial({ color: 0x5a616b, roughness: 0.95 }), cx, CEIL, cz, { cast: false }).rotation.x = Math.PI / 2;
+put(new THREE.PlaneGeometry(WALL_R - WALL_L, H), wallMat, cx, FLOOR + H / 2, WALL_B, { cast: false });
+put(new THREE.PlaneGeometry(FRONT - WALL_B, H), wallMat, WALL_L, FLOOR + H / 2, cz, { cast: false, ry: Math.PI / 2 });
+put(new THREE.PlaneGeometry(FRONT - WALL_B, H), wallMat, WALL_R, FLOOR + H / 2, cz, { cast: false, ry: -Math.PI / 2 });
+// zócalos
+put(new THREE.BoxGeometry(WALL_R - WALL_L, 80, 14), satinBlack, cx, FLOOR + 40, WALL_B + 7, { cast: false });
+put(new THREE.BoxGeometry(14, 80, FRONT - WALL_B), satinBlack, WALL_L + 7, FLOOR + 40, cz, { cast: false });
+put(new THREE.BoxGeometry(14, 80, FRONT - WALL_B), satinBlack, WALL_R - 7, FLOOR + 40, cz, { cast: false });
+
+// ventana en la pared del fondo, a la izquierda del escritorio
+const windowMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x9fc4ee, emissiveIntensity: 1 });
+const WX = -1550, WY = 650, WW = 900, WH = 1100;
+put(new THREE.PlaneGeometry(WW, WH), windowMat, WX, WY, WALL_B + 2, { cast: false, recv: false });
+for(const [w, h, x, y] of [[WW + 60, 50, WX, WY + WH / 2], [WW + 60, 50, WX, WY - WH / 2], [50, WH, WX - WW / 2, WY], [50, WH, WX + WW / 2, WY], [30, WH, WX, WY], [WW, 30, WX, WY + 120]])
+  put(new THREE.BoxGeometry(w, h, 60), satinBlack, x, y, WALL_B + 30);
+put(new THREE.BoxGeometry(WW + 120, 25, 140), walnut, WX, WY - WH / 2 - 35, WALL_B + 70);
+
+// escritorio de nogal con patas negras
+const desk = put(new THREE.BoxGeometry(1800, 36, 1000), walnut, 60, -18, 40, { cast: true });
+for(const x of [-820, 940]) put(new THREE.BoxGeometry(36, 714, 900), satinBlack, x, -36 - 357, 40);
+put(new THREE.BoxGeometry(1700, 120, 24), satinBlack, 60, -100, -420);
+
+// utilería del escritorio a escala real
+put(new THREE.BoxGeometry(210, 12, 148), new THREE.MeshStandardMaterial({ color: 0xd9d3c4, roughness: 0.9 }), -60, 6, 190, { ry: 0.18 });
+put(new THREE.BoxGeometry(212, 2.5, 150), new THREE.MeshPhysicalMaterial({ color: 0x2d3a4f, roughness: 0.6, sheen: 0.4 }), -60, 13.2, 190, { ry: 0.18 });
+put(new THREE.CylinderGeometry(4.5, 4.5, 140, 16), new THREE.MeshStandardMaterial({ color: 0x15181d, metalness: 0.6, roughness: 0.35 }), 80, 4.5, 250, { ry: 0.9 }).rotation.z = Math.PI / 2;
+put(new THREE.CylinderGeometry(42, 39, 95, 48), new THREE.MeshPhysicalMaterial({ color: 0x27303d, roughness: 0.25, clearcoat: 1 }), 330, 47.5, 80);
+
+// alfombra
+put(new THREE.BoxGeometry(2600, 10, 1800), fabric(0x2c3646), 450, FLOOR + 5, 1500, { cast: false });
+
+// cama doble con cabecera, contra la pared del fondo a la derecha
+const BX = 2250, BZ = 460;
+put(new THREE.BoxGeometry(1440, 300, 2040), walnut, BX, FLOOR + 150, BZ);
+put(new THREE.BoxGeometry(1380, 220, 1980), fabric(0xdcd8cf), BX, FLOOR + 410, BZ);
+put(new THREE.BoxGeometry(1420, 60, 1400), fabric(0x34445a), BX, FLOOR + 545, BZ + 300);
+put(new THREE.BoxGeometry(1420, 40, 160), fabric(0x34445a), BX, FLOOR + 470, BZ + 1000).rotation.x = 0.3;
+for(const dx of [-330, 330]){ const p = put(new THREE.BoxGeometry(580, 130, 380), fabric(0xece8e0), BX + dx, FLOOR + 585, BZ - 760); p.rotation.x = -0.18; }
+put(new THREE.BoxGeometry(1500, 1050, 70), fabric(0x262c38), BX, FLOOR + 525, WALL_B + 35);
+
+// velador (mesita de noche) entre el escritorio y la cama
+const NX = 1250, NZ = -340, NTOP = -200;
+put(new THREE.BoxGeometry(400, NTOP - FLOOR - 30, 400), walnut, NX, FLOOR + (NTOP - FLOOR - 30) / 2, NZ);
+put(new THREE.BoxGeometry(420, 30, 420), walnut, NX, NTOP - 15, NZ);
+put(new THREE.BoxGeometry(320, 6, 4), satinBlack, NX, NTOP - 140, NZ + 201, { cast: false });
+put(new THREE.BoxGeometry(150, 20, 220), new THREE.MeshStandardMaterial({ color: 0x8b3a2e, roughness: 0.8 }), NX - 90, NTOP + 10, NZ + 60, { ry: 0.3 });
+
+// sillón de lectura bajo el aplique de pared
+const AX = -1880, AZ = 760, leather = new THREE.MeshPhysicalMaterial({ color: 0x5a3a26, roughness: 0.55, clearcoat: 0.3, clearcoatRoughness: 0.5 });
+put(new THREE.BoxGeometry(720, 420, 760), leather, AX, FLOOR + 210, AZ);
+put(new THREE.BoxGeometry(170, 820, 760), leather, AX - 275, FLOOR + 410, AZ);
+for(const dz of [-330, 330]) put(new THREE.BoxGeometry(720, 600, 110), leather, AX, FLOOR + 300, AZ + dz);
+put(new THREE.BoxGeometry(520, 110, 560), leather, AX + 60, FLOOR + 475, AZ);
+
+/* ================================================================
+   Lámpara de escritorio (modelo paramétrico)
+   ================================================================ */
+// el modelo usa Z hacia arriba (mm); rig lo pasa a Y hacia arriba
+const rig = new THREE.Group();
+rig.rotation.x = -Math.PI / 2;
+scene.add(rig);
+rig.updateMatrixWorld();
+
+const bodies = {};
+for(const k of ['fixed', 'yaw', 'arm1', 'arm2', 'elbow', 'head']){
+  const g = new THREE.Group(); g.matrixAutoUpdate = false; rig.add(g); bodies[k] = g;
+}
+// la ampolleta es un cuerpo propio: puede viajar de un soquete a otro
+const bulbBody = new THREE.Group(); bulbBody.matrixAutoUpdate = false; scene.add(bulbBody);
+
+const domeMat = new THREE.MeshPhysicalMaterial({ color: 0xf4f1ea, roughness: 0.6, sheen: 0.5, sheenColor: new THREE.Color(0xffffff), emissive: 0xffb05a, emissiveIntensity: 0, side: THREE.DoubleSide, envMapIntensity: 0.5 });
+const lensMat = new THREE.MeshPhysicalMaterial({ color: 0x0b1520, roughness: 0.05, metalness: 0.3, clearcoat: 1, emissive: 0x401010, emissiveIntensity: 0, side: THREE.DoubleSide });
+const pinMat = new THREE.MeshStandardMaterial({ color: 0xd4a63a, metalness: 1, roughness: 0.22, emissive: 0xffb02a, emissiveIntensity: 0, envMapIntensity: 1.2 });
+const BLACK = 0x121316;
+function materialFor(p){
+  const ds = { side: THREE.DoubleSide };
+  switch(p.k){
+    case 'domo': return domeMat;
+    case 'camara': return lensMat;
+    case 'pogo': return pinMat;
+    case 'pads': return new THREE.MeshStandardMaterial({ ...ds, color: p.color, metalness: 1, roughness: 0.22, envMapIntensity: 1.2 });
+    case 'imanesA': case 'imanesS': return new THREE.MeshStandardMaterial({ ...ds, color: p.color, metalness: 1, roughness: 0.28, envMapIntensity: 1.1 });
+    case 'anillo': return new THREE.MeshPhysicalMaterial({ ...ds, color: p.color, roughness: 0.1, metalness: 0.05, clearcoat: 1, transparent: true, opacity: 0.86, envMapIntensity: 1.1 });
+    case 'cuerpo': return new THREE.MeshPhysicalMaterial({ ...ds, color: p.color, roughness: 0.36, metalness: 0.55, clearcoat: 0.3, envMapIntensity: 1 });
+    case 'base': return new THREE.MeshPhysicalMaterial({ ...ds, color: BLACK, roughness: 0.5, metalness: 0.1, clearcoat: 0.55, clearcoatRoughness: 0.28, envMapIntensity: 1.2 });
+    case 'perilla': return new THREE.MeshPhysicalMaterial({ ...ds, color: 0x0e0f11, roughness: 0.82, metalness: 0, envMapIntensity: 0.6 });
+    case 'adaptador': case 'plato': return new THREE.MeshPhysicalMaterial({ ...ds, color: 0x16171a, roughness: 0.68, metalness: 0.05, sheen: 0.3, sheenColor: new THREE.Color(0x3a3f48), envMapIntensity: 0.9 });
+    default: return new THREE.MeshPhysicalMaterial({ ...ds, color: BLACK, roughness: 0.42, metalness: 0.15, clearcoat: 0.7, clearcoatRoughness: 0.18, envMapIntensity: 1.2 });
+  }
+}
+
+function toGeo(Mf){
+  const m = Mf.getMesh(), P = m.vertProperties, n = m.numProp, T = m.triVerts, pos = new Float32Array(T.length * 3);
+  for(let i = 0; i < T.length; i++){ const b = T[i] * n; pos[i*3] = P[b]; pos[i*3+1] = P[b+1]; pos[i*3+2] = P[b+2]; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  return toCreasedNormals(geo, THREE.MathUtils.degToRad(32));
+}
+
+// interruptor de palanca cromado en el agujero Sw de la base
+const swGroup = new THREE.Group(); rig.add(swGroup);
+const chrome = new THREE.MeshStandardMaterial({ color: 0xd8dde2, metalness: 1, roughness: 0.14, envMapIntensity: 1.4 });
+const nut = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.6, 2.6, 6).rotateX(Math.PI/2), chrome);
+nut.position.z = 1.3; nut.castShadow = true; swGroup.add(nut);
+const bush = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 5, 24).rotateX(Math.PI/2), chrome);
+bush.position.z = 3.5; bush.castShadow = true; swGroup.add(bush);
+const lever = new THREE.Group(); lever.position.z = 5.5; swGroup.add(lever);
+const stem = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.6, 15, 16).rotateX(Math.PI/2).translate(0, 0, 7.5), chrome);
+stem.castShadow = true; lever.add(stem);
+const tipBall = new THREE.Mesh(new THREE.SphereGeometry(2.3, 20, 12), chrome);
+tipBall.position.z = 15; tipBall.castShadow = true; lever.add(tipBall);
+const swHit = new THREE.Mesh(new THREE.CylinderGeometry(12, 12, 26, 12).rotateX(Math.PI/2).translate(0, 0, 11), new THREE.MeshBasicMaterial({ visible: false }));
+swHit.userData.hit = 'switch'; swGroup.add(swHit);
+
+// la luz viaja con la ampolleta
+const bulbAnchor = new THREE.Group(); bulbBody.add(bulbAnchor);
+const spot = new THREE.SpotLight(0xffb05a, 0, 0, 1.1, 0.9, 1);
+spot.castShadow = true;
+spot.shadow.mapSize.set(2048, 2048);
+spot.shadow.camera.near = 5; spot.shadow.camera.far = 7000;
+spot.shadow.bias = -0.0004;
+spot.shadow.normalBias = 0.6;
+spot.shadow.radius = 6;
+bulbAnchor.add(spot);
+spot.target.position.set(0, 0, -1000);
+bulbAnchor.add(spot.target);
+const glow = new THREE.PointLight(0xffb05a, 0, 500, 1);
+bulbAnchor.add(glow);
+const haloTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d'), gr = x.createRadialGradient(128, 128, 0, 128, 128, 128);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+})();
+const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, color: 0xffb05a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+halo.scale.set(260, 260, 1);
+bulbAnchor.add(halo);
+
+const BG_NIGHT = new THREE.Color(0x0a0d12), BG_DAY = new THREE.Color(0x2e3744);
+const SKY_NIGHT = new THREE.Color(0x0c1626), SKY_DAY = new THREE.Color(0xa8cdf2);
+function setRoom(r){
+  hemi.intensity = 0.25 + 1.2 * r;
+  key.intensity = 0.35 + 2.2 * r;
+  rim.intensity = 0.6 + 0.9 * r;
+  fill.intensity = 0.9 * r;
+  scene.background.copy(BG_NIGHT).lerp(BG_DAY, r);
+  scene.fog.color.copy(scene.background);
+  stage.style.background = '#' + scene.background.getHexString();
+  windowMat.emissive.copy(SKY_NIGHT).lerp(SKY_DAY, r);
+  windowMat.emissiveIntensity = 0.6 + 0.8 * r;
+}
+
+// post-proceso con MSAA, bloom, viñeta y grano fino
+const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const composer = new EffectComposer(renderer, rt);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.45, 0.7, 0.9);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+const finish = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + uTime) * 43758.5453); }
+    void main(){ vec4 c = texture2D(tDiffuse, vUv);
+      float v = smoothstep(1.05, 0.35, length(vUv - 0.5) * 1.25);
+      c.rgb *= mix(0.8, 1.0, v);
+      c.rgb += (h(vUv * 800.0) - 0.5) * 0.018;
+      gl_FragColor = c; }`,
+});
+composer.addPass(finish);
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h);
+  camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+/* ================================================================
+   Lugares de acople: el mismo adaptador SHU (pieza 001) en cada cuerpo.
+   Cada marco tiene el origen en la cara del acople y la ampolleta cuelga hacia su −Y local.
+   ================================================================ */
+const HOSTS = {
+  desk:    { name: 'Escritorio', id: 'ID_LAMP_DESK_01',  note: 'Brazo articulado sobre el escritorio: luz de trabajo enfocada. Arrastra la ampolleta para moverlo.', light: { spot: 320,  glow: 70,  dist: 600,  angle: 1.1 } },
+  ceiling: { name: 'Techo',      id: 'ID_CEILING_01',    note: 'Soquete E27 colgante con su adaptador SHU. Ilumina la habitación y la cámara ve el cuarto completo.', light: { spot: 2600, glow: 900, dist: 8000, angle: 1.25 } },
+  velador: { name: 'Velador',    id: 'ID_NIGHTSTAND_01', note: 'Base de velador junto a la cama, con la ampolleta hacia arriba: luz baja y cálida para leer o dormir.', light: { spot: 900,  glow: 520, dist: 6000, angle: 1.2 } },
+  wall:    { name: 'Pared',      id: 'ID_WALL_01',       note: 'Aplique fijo en la pared sobre el sillón de lectura, con la ampolleta inclinada hacia el asiento.', light: { spot: 1500, glow: 380, dist: 6000, angle: 1.0 } },
+};
+const hostMeshes = [];
+const fixtureMat = satinBlack;
+function rod(a, b, r, mat){
+  const d = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 20), mat);
+  m.position.copy(a).addScaledVector(d, 0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  m.castShadow = m.receiveShadow = true; scene.add(m); return m;
+}
+function buildHosts(adapterMeshes, S){
+  const A = S.A, faceToHolderTop = A.htop + 6;
+  const local = (F, y) => new THREE.Vector3(0, y, 0).applyMatrix4(F);
+  // marcos fijos
+  const NF = NTOP + 170 + faceToHolderTop;                         // cara del acople del velador
+  HOSTS.ceiling.frame = new THREE.Matrix4().makeTranslation(400, 1150, 1200);
+  HOSTS.velador.frame = new THREE.Matrix4().makeTranslation(NX, NF, NZ).multiply(new THREE.Matrix4().makeRotationZ(Math.PI));
+  HOSTS.wall.frame = new THREE.Matrix4().makeTranslation(WALL_L + 300, 1000, 700).multiply(new THREE.Matrix4().makeRotationZ(0.6));
+  for(const id of ['ceiling', 'velador', 'wall']){
+    const F = HOSTS[id].frame;
+    const g = new THREE.Group(); g.matrixAutoUpdate = false; g.matrix.copy(F); scene.add(g);
+    const inner = new THREE.Group(); inner.matrixAutoUpdate = false; inner.matrix.copy(BULB_LOCAL); g.add(inner);
+    for(const m of adapterMeshes){
+      const k = m.userData.k, mat = k === 'pogo' ? new THREE.MeshStandardMaterial({ color: 0xd4a63a, metalness: 1, roughness: 0.22 }) : materialFor({ k, color: k.startsWith('imanes') ? 0xb8bec4 : 0x2b2f34 });
+      const c = new THREE.Mesh(m.geometry, mat); c.castShadow = c.receiveShadow = true;
+      c.userData = { dockId: id }; inner.add(c); hostMeshes.push(c);
+    }
+    const holder = new THREE.Mesh(new THREE.CylinderGeometry(A.Rh, A.Rh, faceToHolderTop - A.hz0, 48), fixtureMat);
+    holder.position.y = (A.hz0 + faceToHolderTop) / 2; holder.castShadow = holder.receiveShadow = true;
+    holder.userData = { dockId: id }; g.add(holder); hostMeshes.push(holder);
+    g.updateMatrixWorld(true);
+    const top = local(F, faceToHolderTop);
+    if(id === 'ceiling'){
+      rod(top, new THREE.Vector3(top.x, CEIL, top.z), 3.5, fixtureMat);
+      put(new THREE.CylinderGeometry(65, 65, 28, 48), fixtureMat, top.x, CEIL - 14, top.z);
+    }
+    if(id === 'velador'){
+      const prof = [[0,0],[72,0],[74,8],[62,40],[80,95],[64,150],[30,165],[24,170],[0,170]].map(([r, y]) => new THREE.Vector2(r, y));
+      put(new THREE.LatheGeometry(prof, 64), new THREE.MeshPhysicalMaterial({ color: 0x111215, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }), NX, NTOP, NZ);
+    }
+    if(id === 'wall'){
+      const plate = put(new THREE.CylinderGeometry(60, 60, 20, 48), fixtureMat, WALL_L + 10, top.y + 70, top.z);
+      plate.rotation.z = Math.PI / 2;
+      const elbow = new THREE.Vector3(WALL_L + 20, top.y + 70, top.z);
+      rod(elbow, top, 9, fixtureMat);
+    }
+  }
+}
+
+/* ================================================================
+   Construcción con manifold-3d (una vez, en la postura de reposo)
+   ================================================================ */
+const deskClip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);   // corte: quita la mitad delantera
+const bulbClip = new THREE.Plane();
+let W = null, meshes = [], model = null, BULB_LOCAL = null;
+const trash = [];
+function trackGC(W){
+  for(const cls of [W.Manifold, W.CrossSection]){
+    const wrap = f=>function(...a){ const r=f.apply(this,a); if(r instanceof W.Manifold || r instanceof W.CrossSection) trash.push(r); return r; };
+    for(let pr=cls.prototype; pr && pr!==Object.prototype; pr=Object.getPrototypeOf(pr))
+      for(const k of Object.getOwnPropertyNames(pr)) if(k!=='constructor' && k[0]!=='_' && !/delete|clone/i.test(k) && typeof pr[k]==='function') pr[k]=wrap(pr[k]);
+    for(const k of Object.getOwnPropertyNames(cls)) if(typeof cls[k]==='function') cls[k]=wrap(cls[k]);
+  }
+}
+const freeGC = ()=>trash.splice(0).forEach(m=>{ try{ m.delete(); }catch(e){} });
+
+const BODY_OF = { base: 'fixed', poste: 'yaw', brazo1: 'arm1', brazo2: 'arm2', porta: 'head' };
+function build(){
+  const v = values(80), g = geom(v), S = stand(v, g);
+  let parts;
+  try { parts = buildParts(W, v, g, S); }
+  catch(e){ console.error(e); freeGC(); $('status').textContent = 'No pude generar los sólidos con estas medidas.'; return; }
+  BULB_LOCAL = new THREE.Matrix4().makeRotationX(-Math.PI / 2).multiply(new THREE.Matrix4().makeTranslation(0, 0, -S.zL));
+  const adapterMeshes = [];
+  for(const p of parts){
+    const mat = materialFor(p);
+    p.world.forEach((w, i) => {
+      const isBulb = p.grp === 'Ampolleta';
+      const body = p.k === 'perilla' ? bodies[['yaw', 'elbow', 'head'][i]] : isBulb ? bulbBody : bodies[BODY_OF[p.k] || 'head'];
+      const mesh = new THREE.Mesh(toGeo(w), mat);
+      mesh.castShadow = p.k !== 'domo' && p.k !== 'anillo';
+      mesh.receiveShadow = true;
+      mesh.userData = { grp: p.grp, exp: p.exp, cut: !!p.cut, k: p.k, bulb: isBulb, drag: p.k !== 'base' };
+      body.add(mesh); meshes.push(mesh);
+      if(p.grp === 'Adaptador') adapterMeshes.push(mesh);
+    });
+  }
+  freeGC();
+  const cexp = parts.find(p => p.k === 'cuerpo').exp;
+  for(const c of g.comps){ if(c.off) continue;
+    const geo = new THREE.BoxGeometry(c.across, c.depth, c.z2 - c.z1); geo.translate(0, 0, S.zL - (c.z1 + c.z2) / 2);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: c.c.color, roughness: 0.6 }));
+    mesh.userData = { grp: 'Electrónica', exp: cexp, cut: true, bulb: true, drag: true };
+    bulbBody.add(mesh); meshes.push(mesh);
+  }
+  const hm = (S.A.hz0 + S.A.htop) / 2;
+  const th = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
+  model = { v, g, S, hm, rest: { psi: 0, u: v.Px, z: S.zL, tilt: 0 }, th1r: th(S.J1, S.J2), th2r: th(S.J2, S.J3) };
+  pose.cur = { ...model.rest }; pose.goal = { ...model.rest };
+  swGroup.position.set(S.swp[0], S.swp[1], v.Bh);
+  buildHosts(adapterMeshes, S);
+  $('spec').innerHTML = `Ampolleta <b>Ø${v.D} × ${Math.round(g.top)} mm</b><br>Adaptador E27 <b>Ø${v.Ds} × ${Math.round(v.Cd + S.A.top)} mm</b><br>Brazos <b>${v.A1} + ${v.A2} mm</b> · base <b>Ø${v.Bd}</b>`;
+  applyPose();
+  applyVis();
+}
+
+/* ================================================================
+   Cinemática del brazo: giro sobre el poste + hombro + codo (misma IK del plano) + cabezal
+   ================================================================ */
+const pose = { cur: null, goal: null, solved: null };
+function clampGoal(p){
+  const { v, g, S, hm } = model, L1 = v.A1, L2 = v.A2, J1 = S.J1, off = S.J3[0];
+  let u = Math.max(30, p.u), z = p.z;
+  const t = THREE.MathUtils.clamp(p.tilt ?? 0, -1.75, 1.75);
+  const floor = (Math.abs(v.Px - u) < v.Bd / 2 + v.D / 2 ? v.Bh : 0) + 3;
+  const low = off * Math.sin(t) - (g.Zc + hm) * Math.cos(t) - g.R;   // punto más bajo del domo, relativo a la articulación del cabezal
+  z = Math.max(z, floor - low - hm);
+  let jx = v.Px - u + off, jz = z + hm, dx = jx - J1[0], dz = jz - J1[1], d = Math.hypot(dx, dz);
+  const dmin = Math.abs(L1 - L2) + 4, dmax = L1 + L2 - 1;
+  if(d > dmax || d < dmin){ const k = THREE.MathUtils.clamp(d, dmin, dmax) / (d || 1); jx = J1[0] + dx * k; jz = J1[1] + dz * k; u = v.Px - (jx - off); z = jz - hm; }
+  return { psi: THREE.MathUtils.clamp(p.psi, -2.6, 2.6), u, z, tilt: t };
+}
+function solve(p){
+  const { v, S, hm } = model, L1 = v.A1, L2 = v.A2, J1 = S.J1;
+  const J3 = [v.Px - p.u + S.J3[0], p.z + hm];
+  const dx = J3[0] - J1[0], dz = J3[1] - J1[1], d = Math.hypot(dx, dz);
+  const a = (L1*L1 - L2*L2 + d*d) / (2*d), h = Math.sqrt(Math.max(L1*L1 - a*a, 0)), mx = J1[0] + a*dx/d, mz = J1[1] + a*dz/d;
+  const c1 = [mx + h*dz/d, mz - h*dx/d], c2 = [mx - h*dz/d, mz + h*dx/d], J2 = c1[0] > c2[0] ? c1 : c2;
+  return { J2, J3, th1: Math.atan2(J2[1] - J1[1], J2[0] - J1[0]), th2: Math.atan2(J3[1] - J2[1], J3[0] - J2[0]) };
+}
+const _m = new THREE.Matrix4(), _r = new THREE.Matrix4();
+const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
+function applyPose(){
+  if(!model) return;
+  const { v, S } = model, p = pose.cur, sol = solve(p);
+  pose.solved = sol;
+  const yaw = T(v.Px, 0, 0).multiply(_r.makeRotationZ(p.psi)).multiply(T(-v.Px, 0, 0));
+  bodies.fixed.matrix.identity();
+  bodies.yaw.matrix.copy(yaw);
+  const J1 = S.J1, J2r = S.J2, J3r = S.J3, J2 = sol.J2, J3 = sol.J3;
+  bodies.arm1.matrix.copy(yaw).multiply(T(J1[0], 0, J1[1])).multiply(_m.makeRotationY(-(sol.th1 - model.th1r))).multiply(T(-J1[0], 0, -J1[1]));
+  bodies.arm2.matrix.copy(yaw).multiply(T(J2[0], 0, J2[1])).multiply(_m.makeRotationY(-(sol.th2 - model.th2r))).multiply(T(-J2r[0], 0, -J2r[1]));
+  bodies.elbow.matrix.copy(yaw).multiply(T(J2[0] - J2r[0], 0, J2[1] - J2r[1]));
+  // el cabezal pivota sobre el perno de la articulación J3
+  bodies.head.matrix.copy(yaw).multiply(T(J3[0], 0, J3[1])).multiply(_m.makeRotationY(p.tilt)).multiply(T(-J3r[0], 0, -J3r[1]));
+  for(const b of Object.values(bodies)) b.matrixWorldNeedsUpdate = true;
+  const deg = (r) => Math.round(r * 180 / Math.PI);
+  const a1 = [J1[0] - J2[0], J1[1] - J2[1]], a2 = [J3[0] - J2[0], J3[1] - J2[1]];
+  const elbow = Math.acos((a1[0]*a2[0] + a1[1]*a2[1]) / (Math.hypot(...a1) * Math.hypot(...a2)));
+  $('angYaw').textContent = deg(p.psi) + '°';
+  $('angShoulder').textContent = deg(sol.th1) + '°';
+  $('angElbow').textContent = deg(elbow) + '°';
+  $('angHeight').textContent = Math.round(p.z - model.g.top - v.Bh) + ' mm';
+  $('tiltOut').textContent = deg(p.tilt) + '°';
+  if(document.activeElement !== $('tilt')) $('tilt').value = deg(pose.goal.tilt);
+}
+function bulbRef(p){
+  const { v } = model;
+  return new THREE.Vector3(v.Px - p.u * Math.cos(p.psi), -p.u * Math.sin(p.psi), p.z);
+}
+
+// marco de acople de cada lugar (el del escritorio se mueve con el brazo)
+const RX90 = new THREE.Matrix4().makeRotationX(Math.PI / 2);
+function frameFor(id, out = new THREE.Matrix4()){
+  if(id !== 'desk') return out.copy(HOSTS[id].frame);
+  return out.copy(rig.matrixWorld).multiply(bodies.head.matrix).multiply(_m.makeTranslation(0, 0, model.S.zL)).multiply(RX90);
+}
+
+/* ================================================================
+   Estado e interfaz
+   ================================================================ */
+const state = { power: true, bright: 0.8, kelvin: 2700, mode: 'reposo', docked: true, explode: false, cut: false, dock: 'desk' };
+let wake = 0, dockT = 1, flash = 0, leverA = -0.45, detectMs = 34, explodeT = 0;
+let pending = null, travel = null;
+
+const MODE_NOTES = {
+  reposo: 'Luz fija. El asistente está atento pero en silencio.',
+  escuchando: 'Respiración lenta del domo: te está escuchando.',
+  pensando: 'Pulso rápido del domo mientras procesa.',
+  flow: 'Luz baja y más cálida. Sin interrupciones mientras trabajas.',
+};
+const MODE_LABEL = { reposo: 'Reposo', escuchando: 'Escuchando', pensando: 'Pensando', flow: 'Flow' };
+const PINS = [['P1','GND','gnd'], ['P2','5 V','power'], ['P3','TX','data'], ['P4','RX','data'], ['P5','SDA','i2c'], ['P6','SCL','i2c']];
+$('pinRows').innerHTML = PINS.map(([n, name]) => `<tr id="pin${n}"><td>${n}</td><td>${name}</td><td></td></tr>`).join('');
+
+function kelvinColor(k){
+  const t = k / 100;
+  const r = t <= 66 ? 255 : 329.698727446 * Math.pow(t - 60, -0.1332047592);
+  const g = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+  const b = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+  const c = (x) => Math.min(255, Math.max(0, x)) / 255;
+  return new THREE.Color().setRGB(c(r), c(g), c(b), THREE.SRGBColorSpace);
+}
+
+function syncUI(){
+  const live = state.docked && dockT >= 1 && !travel, on = live && state.power;
+  const host = HOSTS[travel ? travel.to : pending || state.dock];
+  for(const [n, , kind] of PINS){
+    const row = $('pin' + n);
+    let txt = '—', ok = false;
+    if(kind === 'gnd'){ txt = live ? 'común' : '—'; ok = live; }
+    if(kind === 'power'){ txt = on ? '5,0 V' : live ? '0 V · cortado' : '—'; ok = on; }
+    if(kind === 'data'){ txt = on ? 'UART activo' : '—'; ok = on; }
+    if(kind === 'i2c'){ txt = on ? 'I²C · 400 kHz' : '—'; ok = on; }
+    row.lastChild.textContent = txt;
+    row.classList.toggle('live', ok);
+  }
+  $('power').setAttribute('aria-checked', state.power);
+  $('powerLabel').textContent = state.power ? 'Encendida' : 'Apagada';
+  const chip = (id, good, text) => { $(id).className = 'chip ' + (good ? 'on' : 'warn'); $(id).lastChild.textContent = text; };
+  chip('chipPower', on, on ? '5 V presente' : 'Sin corriente');
+  chip('chipDock', live, live ? 'Acoplada · ' + host.name : travel || pending ? 'Viajando a ' + host.name : state.docked ? 'Acoplando…' : 'Desacoplada');
+  chip('chipCam', on, on ? 'Cámara y mics activos' : 'Cámara y mics sin corriente');
+  $('dock').textContent = state.docked ? 'Desacoplar ampolleta' : 'Acoplar ampolleta';
+  document.querySelectorAll('[data-dock]').forEach(b => b.setAttribute('aria-pressed', b.dataset.dock === (travel ? travel.to : pending || state.dock)));
+  $('dockNote').textContent = `${host.note} Lee ${host.id} por el pin SDA.`;
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === state.mode));
+  $('modeNote').textContent = MODE_NOTES[state.mode];
+  $('brightOut').textContent = Math.round(state.bright * 100) + ' %';
+  $('kelvinOut').textContent = state.kelvin + ' K';
+  $('explode').setAttribute('aria-pressed', state.explode);
+  $('cut').setAttribute('aria-pressed', state.cut);
+  let s;
+  if(!model) s = 'Armando el modelo…';
+  else if(travel || pending) s = `Llevando la ampolleta a <b>${host.name}</b> · el mismo cerebro, otro cuerpo`;
+  else if(!state.docked) s = 'Ampolleta desacoplada · el cerebro queda libre para otro cuerpo';
+  else if(!live) s = 'Acoplando por imán · alineando 6 pogo pins con el nervio KEY…';
+  else if(!state.power) s = 'Interruptor apagado · <b>cámara y micrófonos sin corriente</b>';
+  else s = `${host.name} · <b>${MODE_LABEL[state.mode]}</b> · ${state.mode === 'flow' ? state.kelvin - 300 : state.kelvin} K · ${Math.round(state.bright * 100)} % · ${host.id} · SENSE ${detectMs} ms`;
+  $('status').innerHTML = s;
+}
+
+function applyVis(){
+  if(!model) return;
+  const U = 30, e = dockEase();
+  for(const m of meshes){
+    const u = m.userData;
+    m.visible = u.grp !== 'Electrónica' || state.cut;
+    const want = state.cut && u.cut ? [u.bulb ? bulbClip : deskClip] : [];
+    if(m.material.clippingPlanes?.[0] !== want[0]){ m.material.clippingPlanes = want; m.material.needsUpdate = true; }
+    const drop = u.bulb ? -(1 - e) * U : 0;
+    m.position.set(u.exp[0] * explodeT, u.exp[1] * explodeT, u.exp[2] * explodeT + drop);
+  }
+  const { g, S } = model;
+  bulbAnchor.position.set(0, 0, S.zL - g.Zc - 125 * explodeT - (1 - e) * U);
+}
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+const easeInOut = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeBack = (x) => { const c = 1.2; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const dockEase = () => state.docked ? easeBack(dockT) : easeOut(dockT);
+
+const togglePower = () => { state.power = !state.power; syncUI(); };
+const toggleDock = () => { if(travel || pending) return; state.docked = !state.docked; syncUI(); };
+// llevar la ampolleta a otro lugar: se desacopla, viaja y se acopla con el imán
+function moveTo(id){
+  if(!model || travel) return;
+  flyToHost(id);
+  if(id === state.dock && !pending){ if(!state.docked){ state.docked = true; syncUI(); } return; }
+  pending = id;
+  state.docked = false;
+  syncUI();
+}
+$('power').addEventListener('click', togglePower);
+$('dock').addEventListener('click', toggleDock);
+document.querySelectorAll('[data-dock]').forEach(b => b.addEventListener('click', () => moveTo(b.dataset.dock)));
+$('bright').addEventListener('input', e => { state.bright = e.target.value / 100; syncUI(); });
+$('kelvin').addEventListener('input', e => { state.kelvin = +e.target.value; syncUI(); });
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { state.mode = b.dataset.mode; syncUI(); }));
+$('resetPose').addEventListener('click', () => { if(model) pose.goal = { ...model.rest }; });
+$('tilt').addEventListener('input', e => { if(model) pose.goal = clampGoal({ ...pose.goal, tilt: e.target.value * Math.PI / 180 }); });
+$('poseDemo').addEventListener('click', () => {
+  if(!model) return;
+  const { rest } = model;
+  pose.goal = clampGoal({ psi: -0.55, u: rest.u + 120, z: rest.z + 110, tilt: 0.45 });
+});
+$('explode').addEventListener('click', () => { state.explode = !state.explode; syncUI(); });
+$('cut').addEventListener('click', () => { state.cut = !state.cut; syncUI(); applyVis(); });
+$('spin').addEventListener('change', e => { controls.autoRotate = e.target.checked; });
+$('room').addEventListener('input', e => { setRoom(e.target.value / 100); $('roomOut').textContent = e.target.value + ' %'; });
+setRoom(0.7);
+
+// vistas
+let camAnim = null;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function flyTo(pos, target){
+  if(reduceMotion){ camera.position.copy(pos); controls.target.copy(target); return; }
+  camAnim = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target };
+}
+const HOST_VIEWS = {
+  ceiling: [V(1500, 450, 3700), V(400, 950, 1200)],
+  velador: [V(2050, 250, 1050), V(NX, -40, NZ)],
+  wall:    [V(-600, 1000, 2700), V(-1900, 800, 760)],
+};
+function flyToHost(id){
+  if(id === 'desk'){ const ref = rig.localToWorld(bulbRef(pose.cur)); flyTo(V(620, 460, 900), V(110, ref.y * 0.6, 0)); }
+  else flyTo(...HOST_VIEWS[id]);
+}
+function bulbFrame(){ return frameFor(state.dock); }
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+  if(!model) return;
+  const F = bulbFrame(), face = V(0, 0, 0).applyMatrix4(F);
+  const ax = V(1, 0, 0).transformDirection(F), down = V(0, -1, 0).transformDirection(F), az = V(0, 0, 1).transformDirection(F);
+  const view = b.dataset.view;
+  if(view === 'room') flyTo(V(900, 1700, 8200), V(350, 200, 1100));
+  if(view === 'cenital') flyTo(V(350, 9500, 1400), V(350, FLOOR, 1300));
+  if(view === 'ampolleta'){ const c = face.clone().addScaledVector(down, model.g.top / 2); flyTo(c.clone().addScaledVector(az, 280).addScaledVector(ax, 170).add(V(0, 60, 0)), c); }
+  if(view === 'acople'){
+    if(state.docked) toggleDock();
+    flyTo(face.clone().addScaledVector(down, 170).addScaledVector(az, 160).addScaledVector(ax, 60), face.clone().addScaledVector(down, 10));
+  }
+}));
+
+/* ---------- arrastre de la lámpara y clics en la escena ---------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function castAt(e){
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+}
+function pick(e){
+  castAt(e);
+  return ray.intersectObjects([swHit, ...meshes.filter(m => m.visible), ...hostMeshes], false)[0] || null;
+}
+let down = null, drag = null, tiltDrag = null;
+const HEAD_PARTS = new Set(['porta', 'adaptador', 'plato', 'pogo', 'imanesS']);
+const canDrag = (u) => u.drag && (!u.bulb || (state.dock === 'desk' && !travel && !pending));
+function outwardScreenDir(){
+  const p = pose.cur, out = new THREE.Vector3(-Math.cos(p.psi), -Math.sin(p.psi), 0).multiplyScalar(100);
+  const a = rig.localToWorld(bulbRef(p)).project(camera), b = rig.localToWorld(bulbRef(p).add(out)).project(camera);
+  const d = new THREE.Vector2(b.x - a.x, -(b.y - a.y));
+  if(d.lengthSq() < 1e-8) d.set(1, 0);
+  return d.normalize();
+}
+const dragPlane = new THREE.Plane(), _hit = new THREE.Vector3();
+renderer.domElement.addEventListener('pointerdown', e => {
+  down = { x: e.clientX, y: e.clientY, hit: pick(e) };
+  const h = down.hit;
+  if(!model || !h || !canDrag(h.object.userData)) return;
+  if(e.shiftKey || HEAD_PARTS.has(h.object.userData.k)){
+    tiltDrag = { x: e.clientX, y: e.clientY, t0: pose.goal.tilt, dir: outwardScreenDir() };
+    controls.enabled = false;
+    renderer.domElement.setPointerCapture(e.pointerId);
+    return;
+  }
+  dragPlane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), h.point);
+  const grabModel = rig.worldToLocal(h.point.clone());
+  drag = { offset: grabModel.sub(bulbRef(pose.cur)) };
+  controls.enabled = false;
+  renderer.domElement.setPointerCapture(e.pointerId);
+  renderer.domElement.style.cursor = 'grabbing';
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if(tiltDrag){
+    const d = (e.clientX - tiltDrag.x) * tiltDrag.dir.x + (e.clientY - tiltDrag.y) * tiltDrag.dir.y;
+    pose.goal = clampGoal({ ...pose.goal, tilt: tiltDrag.t0 + d * 0.012 });
+    return;
+  }
+  if(drag){
+    castAt(e);
+    if(!ray.ray.intersectPlane(dragPlane, _hit)) return;
+    const want = rig.worldToLocal(_hit.clone()).sub(drag.offset);
+    const { v } = model, dx = want.x - v.Px, dy = want.y;
+    pose.goal = clampGoal({ psi: Math.atan2(-dy, -dx), u: Math.hypot(dx, dy), z: want.z, tilt: pose.goal.tilt });
+    return;
+  }
+  if(e.buttons) return;
+  const h = pick(e), u = h?.object.userData;
+  renderer.domElement.style.cursor = !h ? 'default' : u.dockId ? 'pointer' : HEAD_PARTS.has(u.k) ? 'ew-resize' : canDrag(u) ? 'grab' : 'pointer';
+});
+const endDrag = (e) => {
+  const wasClick = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 4;
+  if(wasClick && down.hit){
+    const u = down.hit.object.userData;
+    if(u.hit === 'switch') togglePower();
+    else if(u.dockId) moveTo(u.dockId);
+    else if(HEAD_PARTS.has(u.k) && state.dock !== 'desk') moveTo('desk');
+    else if(u.bulb) toggleDock();
+  }
+  if(drag){ drag = null; controls.enabled = true; renderer.domElement.style.cursor = 'grab'; }
+  if(tiltDrag){ tiltDrag = null; controls.enabled = true; }
+  down = null;
+};
+renderer.domElement.addEventListener('pointerup', endDrag);
+renderer.domElement.addEventListener('pointercancel', endDrag);
+
+/* ================================================================
+   Bucle
+   ================================================================ */
+const clock = new THREE.Clock();
+let wasLive = true;
+const _F = new THREE.Matrix4(), _G = new THREE.Matrix4(), _pa = new THREE.Vector3(), _pb = new THREE.Vector3(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _s = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
+function tick(){
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+
+  leverA += ((state.power ? -0.45 : 0.45) - leverA) * (1 - Math.exp(-dt * 18));
+  lever.rotation.x = leverA;
+
+  if(model){
+    const k = reduceMotion ? 1 : 1 - Math.exp(-dt * (drag || tiltDrag ? 14 : 5));
+    for(const key of ['psi', 'u', 'z', 'tilt']) pose.cur[key] += (pose.goal[key] - pose.cur[key]) * k;
+    applyPose();
+  }
+
+  dockT = THREE.MathUtils.clamp(dockT + (state.docked ? dt * 1.6 : -dt * 1.4), 0, 1);
+  explodeT += ((state.explode ? 1 : 0) - explodeT) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 6));
+  if(Math.abs(explodeT - (state.explode ? 1 : 0)) < 0.002) explodeT = state.explode ? 1 : 0;
+
+  // viaje entre lugares
+  if(model && pending && !travel && dockT <= 0){ travel = { from: frameFor(state.dock), to: pending, t: 0 }; pending = null; syncUI(); }
+  if(travel){
+    travel.t = Math.min(1, travel.t + dt / (reduceMotion ? 0.05 : 1.8));
+    if(travel.t >= 1){ state.dock = travel.to; travel = null; state.docked = true; syncUI(); }
+  }
+  if(model){
+    if(travel){
+      const e = easeInOut(travel.t);
+      travel.from.decompose(_pa, _qa, _s); frameFor(travel.to, _G).decompose(_pb, _qb, _s);
+      _pa.lerp(_pb, e); _pa.y += Math.sin(Math.PI * e) * 320;
+      _qa.slerp(_qb, e);
+      _F.compose(_pa, _qa, ONE);
+    } else frameFor(state.dock, _F);
+    bulbBody.matrix.copy(_F).multiply(BULB_LOCAL);
+    bulbBody.matrixWorldNeedsUpdate = true;
+    const n = new THREE.Vector3(0, 0, -1).transformDirection(_F);
+    bulbClip.setFromNormalAndCoplanarPoint(n, _pa.setFromMatrixPosition(_F));
+  }
+  applyVis();
+
+  const live = state.docked && dockT >= 1 && !travel;
+  if(live && !wasLive){ flash = 1; detectMs = 28 + Math.round(Math.random() * 16); }
+  if(live !== wasLive){ wasLive = live; syncUI(); }
+  flash = Math.max(0, flash - dt * 1.8);
+  const powered = live && state.power && !!model;
+  pinMat.emissiveIntensity = (state.dock === 'desk' ? flash * 3 : 0) + (powered && state.dock === 'desk' ? 0.12 : 0);
+
+  wake += ((powered ? 1 : 0) - wake) * (1 - Math.exp(-dt * (powered ? 2.2 : 9)));
+  let mf = 1, kel = state.kelvin;
+  if(state.mode === 'escuchando') mf = 0.8 + 0.2 * Math.sin(t * 1.7);
+  if(state.mode === 'pensando') mf = 0.84 + 0.16 * Math.sin(t * 7);
+  if(state.mode === 'flow'){ mf = 0.55; kel -= 300; }
+  const level = state.bright * wake * mf, L = HOSTS[state.dock].light;
+  const col = kelvinColor(kel);
+  domeMat.emissive.copy(col); domeMat.emissiveIntensity = level * 2.0;
+  spot.color.copy(col); spot.intensity = level * L.spot; spot.angle = L.angle;
+  glow.color.copy(col); glow.intensity = level * L.glow; glow.distance = L.dist;
+  halo.material.color.copy(col); halo.material.opacity = level * 0.35;
+  lensMat.emissiveIntensity = powered ? 0.9 : 0;
+  finish.uniforms.uTime.value = t % 10;
+
+  if(camAnim){
+    camAnim.t = Math.min(1, camAnim.t + dt / 1.3);
+    const s = easeInOut(camAnim.t);
+    camera.position.lerpVectors(camAnim.p0, camAnim.p1, s);
+    controls.target.lerpVectors(camAnim.t0, camAnim.t1, s);
+    if(camAnim.t >= 1) camAnim = null;
+  }
+  controls.update();
+  composer.render();
+  requestAnimationFrame(tick);
+}
+
+syncUI();
+tick();
+
+(async () => {
+  try {
+    // copia local de manifold-3d; si no se puede leer (p. ej. abriendo el archivo sin servidor), usa el CDN
+    let mod, wasmBinary;
+    try { mod = await import('./manifold.js'); wasmBinary = await (await fetch('manifold.wasm')).arrayBuffer(); }
+    catch(e){ mod = await import('https://cdn.jsdelivr.net/npm/manifold-3d@3.2.1/manifold.js'); wasmBinary = null; }
+    W = await mod.default(wasmBinary ? { wasmBinary, locateFile: () => 'manifold.wasm' } : {});
+    W.setup(); trackGC(W);
+  } catch(e){
+    console.error(e);
+    $('loading').textContent = 'No se pudo cargar el motor de sólidos (manifold-3d). Recarga la página.';
+    return;
+  }
+  build();
+  $('loading').remove();
+  controls.target.set(110, model.S.zL * 0.6, 0);
+  syncUI();
+})();
+</script>
+
+</body>
+</html>

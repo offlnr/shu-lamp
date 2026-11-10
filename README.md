@@ -10,3 +10,15 @@ Abre `index.html` en el navegador (necesita internet para cargar three.js y mani
 - **Prototipo 3D**: la lámpara completa (ampolleta + soporte), ensamblada o separada, con corte y capas. Abajo está la lista de piezas con su tamaño en la cama, volumen, material sugerido y un STL por pieza, listo para el slicer (mm, Z hacia arriba, orientado para imprimir).
 
 Las medidas del grupo **Soporte de mesa** son de diseño: el codo de los brazos se calcula solo para dejar la ampolleta a la altura pedida.
+
+## Simulación interactiva
+
+`simulacion/index.html` monta el mismo modelo paramétrico (medidas de referencia + las medidas tomadas) en una habitación 3D con cuatro lugares de acople para la misma ampolleta: lámpara de escritorio, soquete de techo, velador y aplique de pared. Cada uno lleva su propio adaptador SHU.
+
+- Arrastra la ampolleta o los brazos para mover la lámpara de escritorio (giro sobre el poste, hombro y codo con la misma IK del plano). El portalámparas, Shift + arrastrar o el deslizador inclinan el cabezal sobre la articulación J3.
+- Interruptor de palanca con corte de 5 V, brillo, temperatura de color, modos de luz (reposo, escucha, piensa, flow) y luz de la habitación.
+- Desacople y acople magnético animado, pinout en vivo (P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL), vista explosionada y corte.
+
+Para usar la copia local de manifold-3d (`manifold.js` y `manifold.wasm`) sírvela con un servidor, por ejemplo `python3 -m http.server` dentro de `simulacion/`. Si abres el archivo directo, carga manifold-3d desde el CDN.
+
+En la simulación los brazos son más largos que en el plano (A1 300, A2 260, Ø16, poste 40 mm).
