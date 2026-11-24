@@ -16,9 +16,18 @@ Las medidas del grupo **Soporte de mesa** son de diseño: el codo de los brazos 
 `simulacion/index.html` monta el mismo modelo paramétrico (medidas de referencia + las medidas tomadas) en una habitación 3D con cuatro lugares de acople para la misma ampolleta: lámpara de escritorio, soquete de techo, velador y aplique de pared. Cada uno lleva su propio adaptador SHU.
 
 - Arrastra la ampolleta o los brazos para mover la lámpara de escritorio (giro sobre el poste, hombro y codo con la misma IK del plano). El portalámparas, Shift + arrastrar o el deslizador inclinan el cabezal sobre la articulación J3.
-- Interruptor de palanca con corte de 5 V, brillo, temperatura de color, modos de luz (reposo, escucha, piensa, flow) y luz de la habitación.
+- Interruptor de palanca con corte de 5 V, brillo, temperatura de color, modos de luz (normal, escuchando, pensando, enfoque) y luz de la habitación.
+- **Habla con SHU**: burbujas de texto ancladas a la ampolleta. Responde la hora y la fecha, inicia un temporizador de estudio, guarda recordatorios y ajusta brillo y color. El anillo sensorial se ilumina al escuchar, pensar y hablar. Con el interruptor apagado o la ampolleta desacoplada, no responde.
+- **SHU por su cuenta** (se puede desactivar): cada tanto avisa la hora, corrige la postura, sugiere pausas y sube o baja la luz según la de la habitación. Al cambiarla de lugar, dice dónde quedó.
 - Desacople y acople magnético animado, pinout en vivo (P1 GND · P2 5 V · P3 TX · P4 RX · P5 SDA · P6 SCL), vista explosionada y corte.
+- Habitación amoblada (escritorio con repisas, silla, cama, velador, sillón, armario, puerta, cortinas y plantas) con oclusión ambiental.
+
+Las respuestas de SHU están programadas en el navegador (no hay un modelo de IA real detrás) y los temporizadores corren a ×60: un minuto dura un segundo.
 
 Para usar la copia local de manifold-3d (`manifold.js` y `manifold.wasm`) sírvela con un servidor, por ejemplo `python3 -m http.server` dentro de `simulacion/`. Si abres el archivo directo, carga manifold-3d desde el CDN.
 
 En la simulación los brazos son más largos que en el plano (A1 300, A2 260, Ø16, poste 40 mm).
+
+## Landing + simulación en un solo archivo
+
+`SHU.html` es la página de presentación de SHU con la simulación incluida: los botones «Simulación 3D» la abren a pantalla completa y «Volver a la página» la cierra. Las imágenes y manifold-3d van incrustados, así que basta con abrirlo con doble clic (necesita internet para three.js y las fuentes). Precio y fecha de entrega aparecen como `[PRECIO]` y `[FECHA]`.
